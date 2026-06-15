@@ -16,7 +16,6 @@ pkgs.testers.nixosTest {
     boot.loader.efi.canTouchEfiVariables = true;
 
     # Simulate Home Manager activation without full flake import
-    # Test verifies user exists and basic structure
     services.getty.autologinUser = "terabytes";
   };
 
@@ -45,9 +44,16 @@ pkgs.testers.nixosTest {
     # Wait for user login
     machine.wait_until_succeeds("pgrep -u terabytes")
 
+    # Verify fish shell is the default shell
+    output = machine.succeed("getent passwd terabytes | cut -d: -f7")
+    assert "fish" in output, f"Shell is not fish: {output}"
+
     # Verify XDG directories can be created
     machine.succeed("su - terabytes -c 'mkdir -p ~/Documents ~/Downloads ~/Pictures ~/Videos'")
     machine.succeed("test -d /home/terabytes/Documents")
     machine.succeed("test -d /home/terabytes/Downloads")
+
+    # Verify dev tools are available in the system
+    machine.succeed("which git")
   '';
 }

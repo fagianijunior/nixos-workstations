@@ -57,6 +57,7 @@
         bluetooth = import ./tests/bluetooth-test.nix { inherit pkgs self; };
         gpu = import ./tests/gpu-test.nix { inherit pkgs self; };
         hyprland = import ./tests/hyprland-test.nix { inherit pkgs self; };
+        desktop-tools = import ./tests/desktop-tools-test.nix { inherit pkgs self; };
         security = import ./tests/security-test.nix { inherit pkgs self; };
         power-management = import ./tests/power-management-test.nix { inherit pkgs self; };
         home-manager = import ./tests/home-manager-test.nix { inherit pkgs self; };

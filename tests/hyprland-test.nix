@@ -39,7 +39,12 @@ pkgs.testers.nixosTest {
     machine.succeed("which grim")
     machine.succeed("which slurp")
     machine.succeed("which wofi")
-    machine.succeed("which mako")
     machine.succeed("which brightnessctl")
+    machine.succeed("which playerctl")
+    machine.succeed("which pamixer")
+
+    # Verify fonts are installed
+    machine.succeed("fc-list | grep -qi 'JetBrainsMono'")
+    machine.succeed("fc-list | grep -qi 'FiraCode'")
   '';
 }

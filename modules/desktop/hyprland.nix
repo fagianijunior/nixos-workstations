@@ -41,9 +41,7 @@
     wl-clipboard       # Clipboard manager for Wayland
     grim               # Screenshot utility
     slurp              # Region selector
-    mako               # Notification daemon
     wofi               # Application launcher
-    swaylock-effects   # Screen locker
     wlsunset           # Blue light filter
     brightnessctl      # Backlight control
     pamixer            # PulseAudio/PipeWire CLI mixer
