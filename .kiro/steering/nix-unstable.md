@@ -44,3 +44,4 @@ Este projeto usa `nixos-unstable` e `home-manager` master (follows nixpkgs). As 
 - Home Manager: `programs.git.settings` (não `programs.git.extraConfig`)
 - Home Manager: `catppuccin.homeModules.catppuccin` (não `catppuccin.homeManagerModules.catppuccin`)
 - RADV é o default Vulkan driver (amdvlk foi removido)
+- Home Manager: `wayland.windowManager.hyprland.configType = "hyprlang"` necessário se usar variáveis $var (default mudou para "lua" em stateVersion 26.05)

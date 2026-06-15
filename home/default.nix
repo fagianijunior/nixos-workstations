@@ -410,13 +410,18 @@ in
     enable = true;
     xwayland.enable = true;
     systemd.enable = false;
+    configType = "hyprlang";
     settings = {
+      # Catppuccin Macchiato palette references:
+      # base: 1e1e2e, surface0: 313244, surface1: 45475a
+      # teal: 94e2d5, blue: 89b4fa, lavender: b4befe
+      # text: cdd6f4, subtext0: a6adc8
+
       "$terminal" = "wezterm";
       "$browser" = "firefox --ProfileManager";
       "$fileManager" = "$terminal -e yazi";
       "$menu" = "wofi --show drun";
       "$mainMod" = "SUPER";
-      "$volume_sidemenu" = "match:class ^(org.pulseaudio.pavucontrol)$";
 
       monitor = [ ",preferred,auto,auto" ];
 
@@ -424,57 +429,18 @@ in
         gaps_in = 3;
         gaps_out = 3;
         border_size = 2;
-        "col.active_border" = "rgb(94e2d5)";
+        "col.active_border" = "rgb(94e2d5) rgb(89b4fa) 45deg";
         "col.inactive_border" = "rgb(313244)";
         resize_on_border = true;
         allow_tearing = false;
         layout = "dwindle";
       };
 
-      misc = {
-        force_default_wallpaper = -1;
-        disable_splash_rendering = true;
-        disable_hyprland_logo = true;
-        background_color = "0x1e1e2e";
-      };
-
-      input = {
-        left_handed = false;
-        follow_mouse = 1;
-        sensitivity = 0;
-        scroll_points = "-1 -1";
-        scroll_factor = "0.5";
-        touchpad = {
-          natural_scroll = true;
-          disable_while_typing = true;
-          clickfinger_behavior = true;
-          scroll_factor = "0.5";
-        };
-      };
-
-      binds = {
-        workspace_back_and_forth = true;
-      };
-
-      dwindle = {
-        pseudotile = true;
-        preserve_split = true;
-        smart_split = true;
-      };
-
-      device = {
-        "keyboard-k380-keyboard" = {
-          kb_layout = "us";
-          kb_variant = "intl";
-        };
-        "at-translated-set-2-keyboard" = {
-          kb_layout = "br";
-          kb_variant = "";
-        };
-      };
-
       decoration = {
         rounding = 10;
+        active_opacity = 0.9;
+        inactive_opacity = 0.7;
+        fullscreen_opacity = 1.0;
         blur = {
           enabled = true;
           size = 8;
@@ -482,9 +448,6 @@ in
           new_optimizations = true;
           ignore_opacity = false;
         };
-        active_opacity = "0.9";
-        inactive_opacity = "0.7";
-        fullscreen_opacity = "1.0";
       };
 
       animations = {
@@ -500,12 +463,50 @@ in
         ];
       };
 
+      input = {
+        follow_mouse = 1;
+        sensitivity = 0;
+        scroll_factor = 0.5;
+        touchpad = {
+          natural_scroll = true;
+          disable_while_typing = true;
+          scroll_factor = 0.5;
+        };
+      };
+
+      device = [
+        {
+          name = "keyboard-k380-keyboard";
+          kb_layout = "us";
+          kb_variant = "intl";
+        }
+        {
+          name = "at-translated-set-2-keyboard";
+          kb_layout = "br";
+          kb_variant = "";
+        }
+      ];
+
+      dwindle = {
+        pseudotile = true;
+        preserve_split = true;
+      };
+
       master = {
         new_status = "master";
       };
 
+      misc = {
+        force_default_wallpaper = 0;
+        disable_splash_rendering = true;
+        disable_hyprland_logo = true;
+      };
+
+      binds = {
+        workspace_back_and_forth = true;
+      };
+
       bind = [
-        "$mainMod, TAB, overview:toggle,"
         "$mainMod CTRL, V, exec, pypr toggle volume"
         "$mainMod, Z, exec, pypr zoom"
         "$mainMod, ESCAPE, exec, pkill -x wlogout || wlogout"
@@ -526,15 +527,15 @@ in
         "$mainMod, L, exec, hyprlock"
         "$mainMod ALT, M, exit,"
         "$mainMod, P, pseudo,"
-        "$mainMod, Q, killactive"
+        "$mainMod, Q, killactive,"
         "$mainMod, R, exec, $menu"
         "$mainMod, SPACE, exec, $terminal"
-        "$mainMod, O, exec, hyprctl setprop active opaque toggle "
+        "$mainMod, O, exec, hyprctl setprop active opaque toggle"
         "$mainMod SHIFT, N, exec, fish -c notification_mode_toggle"
         "Alt, E, exec, $fileManager"
         "Alt, G, exec, gimp"
         "Alt, T, exec, telegram-desktop"
-        "Alt, W, exec, firefox -P whatsapp -kiosk https://web.whatsapp.com"
+        "Alt, W, exec, firefox -P whatsapp --kiosk https://web.whatsapp.com"
         "$mainMod, left, movefocus, l"
         "$mainMod, right, movefocus, r"
         "$mainMod, up, movefocus, u"
@@ -573,23 +574,23 @@ in
         ", XF86AudioNext, exec, playerctl next"
       ];
 
-      windowrule = [
-        "float on, match:title (Media viewer)"
-        "opaque on, match:title (Media viewer)"
-        "center on, match:title ^(Open File)(.*)$"
-        "center on, match:title ^(Select a File)(.*)$"
-        "center on, match:title ^(Choose wallpaper)(.*)$"
-        "center on, match:title ^(Open Folder)(.*)$"
-        "center on, match:title ^(Save As)(.*)$"
-        "center on, match:title ^(Library)(.*)$"
-        "center on, match:title ^(File Upload)(.*)$"
-        "float on, $volume_sidemenu"
-        "float on, match:title ^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$"
-        "opaque on, match:title ^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$"
-        "opaque on, match:title ^(Netflix)(.*)$"
-        "opaque on, match:title ^(.*)(Youtube)(.*)$"
-        "suppress_event fullscreen maximize, match:class .*"
-        "pin on, match:title ^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$"
+      windowrulev2 = [
+        "float, title:(Media viewer)"
+        "opacity 1.0 override, title:(Media viewer)"
+        "center, title:^(Open File)(.*)$"
+        "center, title:^(Select a File)(.*)$"
+        "center, title:^(Choose wallpaper)(.*)$"
+        "center, title:^(Open Folder)(.*)$"
+        "center, title:^(Save As)(.*)$"
+        "center, title:^(Library)(.*)$"
+        "center, title:^(File Upload)(.*)$"
+        "float, class:^(org.pulseaudio.pavucontrol)$"
+        "float, title:^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$"
+        "opacity 1.0 override, title:^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$"
+        "pin, title:^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$"
+        "opacity 1.0 override, title:^(Netflix)(.*)$"
+        "opacity 1.0 override, title:^(.*)(Youtube)(.*)$"
+        "suppressevent fullscreen maximize, class:.*"
       ];
 
       exec-once = [
@@ -598,7 +599,6 @@ in
         "poweralertd"
         "avizo-service"
         "systemctl --user start psi-notify"
-        "systemctl --user start quickshell"
         "wl-paste --type text --watch cliphist store"
         "wl-paste --type image --watch cliphist store"
         "fish -c autostart"
@@ -724,6 +724,7 @@ in
     fd
     eza
     fzf
+    grc
 
     # Hyprland ecosystem
     pyprland

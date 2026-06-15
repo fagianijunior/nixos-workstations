@@ -54,7 +54,7 @@ Substitua `/dev/nvme0n1` pelo seu disco real (`lsblk` para verificar).
 
 | Partição | Tamanho | Tipo | Uso |
 |----------|---------|------|-----|
-| p1 | 512 MB | EFI System | /boot |
+| p1 | 1024 MB | EFI System | /boot |
 | p2 | RAM size (ex: 16GB) | Linux swap | swap + hibernação |
 | p3 | Restante | Linux filesystem | LUKS → Btrfs |
 
