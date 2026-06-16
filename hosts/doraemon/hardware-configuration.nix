@@ -20,7 +20,7 @@
 
   # LUKS encryption
   boot.initrd.luks.devices."cryptroot" = {
-    device = "/dev/disk/by-uuid/f9ce2e50-b408-4479-b849-e83ede69c61f";
+    device = "/dev/disk/by-uuid/1c8c316d-091c-4d26-b4b9-ab6012041559";
     preLVM = true;
     allowDiscards = true; # Enable TRIM for NVMe
   };
@@ -52,7 +52,7 @@
 
   # EFI boot partition
   fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/E503-847E";
+    device = "/dev/disk/by-uuid/3C14-B281";
     fsType = "vfat";
     options = [ "fmask=0022" "dmask=0022" ];
   };
@@ -60,10 +60,10 @@
   # Swap with hibernation support
   swapDevices = [
     {
-      device = "/dev/disk/by-uuid/383dd51b-b0fc-4769-8e7d-219241619a10";
+      device = "/dev/disk/by-uuid/4301fbe5-a9db-4c24-a4b3-24a18495d6da";
     }
   ];
-  boot.resumeDevice = "/dev/disk/by-uuid/383dd51b-b0fc-4769-8e7d-219241619a10";
+  boot.resumeDevice = "/dev/disk/by-uuid/4301fbe5-a9db-4c24-a4b3-24a18495d6da";
 
   # Hardware platform
   # Lenovo IdeaPad Slim 3 15ARP10, AMD Ryzen 7 7735HS, Rembrandt RADEON 680M

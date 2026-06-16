@@ -5,7 +5,8 @@
   networking.firewall = {
     enable = true;
     allowedTCPPorts = [ ]; # No open ports by default
-    allowedUDPPorts = [ ]; # No open ports by default
+    allowedUDPPorts = [ config.services.tailscale.port ]; # No open ports by default
+    trustedInterfaces = [ "tailscale0" ];
     # Steam remote play ports are managed by programs.steam.remotePlay.openFirewall
   };
   networking.nftables.enable = true;

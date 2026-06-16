@@ -320,6 +320,25 @@ in
     };
   };
 
+  services.hyprlauncher = {
+    enable = true;
+    settings = {
+      cache = {
+        enable = true;
+      };
+      finders = {
+        desktop_icons = true;
+        math_prefix = "=";
+      };
+      general = {
+        grab_focus = true;
+      };
+      ui = {
+        window_size = "400 260";
+      };
+    };
+  };
+
   # Hyprland ecosystem services
   services.hypridle = {
     enable = true;
@@ -410,205 +429,6 @@ in
     enable = true;
     xwayland.enable = true;
     systemd.enable = false;
-    configType = "hyprlang";
-    settings = {
-      # Catppuccin Macchiato palette references:
-      # base: 1e1e2e, surface0: 313244, surface1: 45475a
-      # teal: 94e2d5, blue: 89b4fa, lavender: b4befe
-      # text: cdd6f4, subtext0: a6adc8
-
-      "$terminal" = "wezterm";
-      "$browser" = "firefox --ProfileManager";
-      "$fileManager" = "$terminal -e yazi";
-      "$menu" = "wofi --show drun";
-      "$mainMod" = "SUPER";
-
-      monitor = [ ",preferred,auto,auto" ];
-
-      general = {
-        gaps_in = 3;
-        gaps_out = 3;
-        border_size = 2;
-        "col.active_border" = "rgb(94e2d5) rgb(89b4fa) 45deg";
-        "col.inactive_border" = "rgb(313244)";
-        resize_on_border = true;
-        allow_tearing = false;
-        layout = "dwindle";
-      };
-
-      decoration = {
-        rounding = 10;
-        active_opacity = 0.9;
-        inactive_opacity = 0.7;
-        fullscreen_opacity = 1.0;
-        blur = {
-          enabled = true;
-          size = 8;
-          passes = 3;
-          new_optimizations = true;
-          ignore_opacity = false;
-        };
-      };
-
-      animations = {
-        enabled = true;
-        bezier = "myBezier, 0.05, 0.9, 0.1, 1.05";
-        animation = [
-          "windows, 1, 7, myBezier"
-          "windowsOut, 1, 7, default, popin 80%"
-          "border, 1, 10, default"
-          "borderangle, 1, 8, default"
-          "fade, 1, 7, default"
-          "workspaces, 1, 6, default"
-        ];
-      };
-
-      input = {
-        follow_mouse = 1;
-        sensitivity = 0;
-        scroll_factor = 0.5;
-        touchpad = {
-          natural_scroll = true;
-          disable_while_typing = true;
-          scroll_factor = 0.5;
-        };
-      };
-
-      device = [
-        {
-          name = "keyboard-k380-keyboard";
-          kb_layout = "us";
-          kb_variant = "intl";
-        }
-        {
-          name = "at-translated-set-2-keyboard";
-          kb_layout = "br";
-          kb_variant = "";
-        }
-      ];
-
-      dwindle = {
-        pseudotile = true;
-        preserve_split = true;
-      };
-
-      master = {
-        new_status = "master";
-      };
-
-      misc = {
-        force_default_wallpaper = 0;
-        disable_splash_rendering = true;
-        disable_hyprland_logo = true;
-      };
-
-      binds = {
-        workspace_back_and_forth = true;
-      };
-
-      bind = [
-        "$mainMod CTRL, V, exec, pypr toggle volume"
-        "$mainMod, Z, exec, pypr zoom"
-        "$mainMod, ESCAPE, exec, pkill -x wlogout || wlogout"
-        "$mainMod SHIFT, P, exec, fish -c screenshot_to_clipboard"
-        "$mainMod CTRL, P, exec, fish -c screenshot_edit"
-        "$mainMod SHIFT, R, exec, fish -c record_screen_gif"
-        "$mainMod CTRL, R, exec, fish -c record_screen_mp4"
-        ''$mainMod, V, exec, cliphist list | wofi --dmenu --pre-display-cmd "echo '%s' | cut -f 2" | cliphist decode | wl-copy''
-        "$mainMod, X, exec, fish -c clipboard_delete_item"
-        "$mainMod SHIFT, X, exec, fish -c clipboard_clear"
-        "$mainMod, U, exec, fish -c bookmark_to_type"
-        "$mainMod SHIFT, U, exec, fish -c bookmark_add"
-        "$mainMod CTRL, U, exec, fish -c bookmark_delete"
-        "$mainMod, D, fullscreen, 1"
-        "$mainMod, F, fullscreen, 0"
-        "$mainMod SHIFT, F, togglefloating,"
-        "$mainMod, J, togglesplit,"
-        "$mainMod, L, exec, hyprlock"
-        "$mainMod ALT, M, exit,"
-        "$mainMod, P, pseudo,"
-        "$mainMod, Q, killactive,"
-        "$mainMod, R, exec, $menu"
-        "$mainMod, SPACE, exec, $terminal"
-        "$mainMod, O, exec, hyprctl setprop active opaque toggle"
-        "$mainMod SHIFT, N, exec, fish -c notification_mode_toggle"
-        "Alt, E, exec, $fileManager"
-        "Alt, G, exec, gimp"
-        "Alt, T, exec, telegram-desktop"
-        "Alt, W, exec, firefox -P whatsapp --kiosk https://web.whatsapp.com"
-        "$mainMod, left, movefocus, l"
-        "$mainMod, right, movefocus, r"
-        "$mainMod, up, movefocus, u"
-        "$mainMod, down, movefocus, d"
-        "$mainMod, S, togglespecialworkspace, magic"
-        "$mainMod SHIFT, S, movetoworkspace, special:magic"
-        "$mainMod, G, togglespecialworkspace, game"
-        "$mainMod SHIFT, G, movetoworkspace, special:game"
-        "$mainMod, mouse_down, workspace, e+1"
-        "$mainMod, mouse_up, workspace, e-1"
-        "$mainMod, M, exec, fish -c logitech-change-host"
-      ] ++ (builtins.concatLists (builtins.genList (i:
-        let ws = i + 1;
-        in [
-          "$mainMod, code:1${toString i}, workspace, ${toString ws}"
-          "$mainMod SHIFT, code:1${toString i}, movetoworkspace, ${toString ws}"
-        ]) 9));
-
-      bindm = [
-        "$mainMod, mouse:272, movewindow"
-        "$mainMod, mouse:273, resizewindow"
-      ];
-
-      bindel = [
-        ",XF86MonBrightnessUp, exec, lightctl up"
-        ",XF86MonBrightnessDown, exec, lightctl down"
-        ",XF86AudioRaiseVolume, exec, volumectl -u up"
-        ",XF86AudioLowerVolume, exec, volumectl -u down"
-        ",XF86AudioMute, exec, volumectl toggle-mute"
-        "$mainMod, XF86AudioMute, exec, volumectl -m toggle-mute"
-      ];
-
-      bindl = [
-        ", XF86AudioPlay, exec, playerctl play-pause"
-        ", XF86AudioPrev, exec, playerctl previous"
-        ", XF86AudioNext, exec, playerctl next"
-      ];
-
-      windowrulev2 = [
-        "float, title:(Media viewer)"
-        "opacity 1.0 override, title:(Media viewer)"
-        "center, title:^(Open File)(.*)$"
-        "center, title:^(Select a File)(.*)$"
-        "center, title:^(Choose wallpaper)(.*)$"
-        "center, title:^(Open Folder)(.*)$"
-        "center, title:^(Save As)(.*)$"
-        "center, title:^(Library)(.*)$"
-        "center, title:^(File Upload)(.*)$"
-        "float, class:^(org.pulseaudio.pavucontrol)$"
-        "float, title:^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$"
-        "opacity 1.0 override, title:^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$"
-        "pin, title:^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$"
-        "opacity 1.0 override, title:^(Netflix)(.*)$"
-        "opacity 1.0 override, title:^(.*)(Youtube)(.*)$"
-        "suppressevent fullscreen maximize, class:.*"
-      ];
-
-      exec-once = [
-        "pypr"
-        "hypridle"
-        "poweralertd"
-        "avizo-service"
-        "systemctl --user start psi-notify"
-        "wl-paste --type text --watch cliphist store"
-        "wl-paste --type image --watch cliphist store"
-        "fish -c autostart"
-        "[workspace 1] $browser"
-        "[workspace 3] clickup"
-        "[workspace 3] slack"
-        "[workspace 3] telegram-desktop"
-        "systemctl --user start hyprpolkitagent"
-      ];
-    };
   };
 
   # Pyprland configuration
@@ -747,6 +567,7 @@ in
     terraform-ls
     rubyPackages.solargraph
     uv
+    kiro
   ];
 
   # Firefox

@@ -59,4 +59,7 @@
       FallbackDNS = [ "1.1.1.1" "8.8.8.8" ];
     };
   };
+
+  # tailscale
+  services.tailscale.enable = true;
 }

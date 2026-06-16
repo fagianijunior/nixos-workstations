@@ -47,6 +47,7 @@
     pamixer            # PulseAudio/PipeWire CLI mixer
     playerctl          # Media player control
     libnotify          # Notification library
+    kitty
   ];
 
   # Enable polkit for privilege escalation
