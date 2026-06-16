@@ -85,6 +85,7 @@
     pciutils
     usbutils
     lsof
+    viu
   ];
 
   # Enable dbus

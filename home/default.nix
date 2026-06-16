@@ -453,6 +453,7 @@ in
         "expose"
         "shortcuts_menu"
         "toggle_special"
+        "lost_windows"
       ];
       scratchpads = {
         term = {
@@ -464,9 +465,9 @@ in
           multi = false;
         };
         volume = {
-          command = "pavucontrol --class volume_sidemenu";
+          command = "env GDK_BACKEND=wayland pavucontrol";
           animation = "fromLeft";
-          class = "volume_sidemenu";
+          class = "org.pulseaudio.pavucontrol";
           size = "40% 70%";
           unfocus = "hide";
           excludes = "*";
@@ -487,6 +488,19 @@ in
     font = {
       name = "FiraCode Nerd Font Mono";
       size = 10;
+    };
+  };
+
+  # Wofi launcher (themed by catppuccin autoEnable)
+  programs.wofi = {
+    enable = true;
+    settings = {
+      width = 400;
+      height = 300;
+      show = "drun";
+      prompt = "Search...";
+      allow_markup = true;
+      insensitive = true;
     };
   };
 
@@ -566,10 +580,12 @@ in
     quickshell
     hyprpolkitagent
     pavucontrol
+    swappy
     gimp
     telegram-desktop
     slack
     clickup
+    pavucontrol
 
     # Dev tools
     python3

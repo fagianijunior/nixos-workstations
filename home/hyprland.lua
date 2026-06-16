@@ -23,6 +23,7 @@ hl.monitor({
 local terminal    = "kitty"
 local fileManager = "dolphin"
 local menu        = "hyprlauncher"
+local browser     = "firefox"
 
 
 -------------------
@@ -30,7 +31,26 @@ local menu        = "hyprlauncher"
 -------------------
 
 -- See https://wiki.hypr.land/Configuring/Basics/Autostart/
+hl.on("hyprland.start", function()
+  -- Core services
+  hl.exec_cmd("hyprpaper")
+  hl.exec_cmd("hypridle")
+  hl.exec_cmd("pypr")
+  hl.exec_cmd("poweralertd")
+  hl.exec_cmd("avizo-service")
+  hl.exec_cmd("systemctl --user start psi-notify")
+  hl.exec_cmd("systemctl --user start hyprpolkitagent")
 
+  -- Clipboard history
+  hl.exec_cmd("wl-paste --type text --watch cliphist store")
+  hl.exec_cmd("wl-paste --type image --watch cliphist store")
+
+  -- Apps on specific workspaces
+  hl.exec_cmd("[workspace 1] " .. browser)
+  hl.exec_cmd("[workspace 3] clickup")
+  hl.exec_cmd("[workspace 3] slack")
+  hl.exec_cmd("[workspace 3] telegram-desktop")
+end)
 
 -------------------------------
 ---- ENVIRONMENT VARIABLES ----
@@ -49,14 +69,14 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- Refer to https://wiki.hypr.land/Configuring/Basics/Variables/
 hl.config({
     general = {
-        gaps_in  = 2,
-        gaps_out = 2,
+        gaps_in  = 3,
+        gaps_out = 3,
 
         border_size = 2,
 
         col = {
-            active_border   = { colors = {"rgba(33ccffee)", "rgba(00ff99ee)"}, angle = 45 },
-            inactive_border = "rgba(595959aa)",
+            active_border   = "rgb(94e2d5)",
+            inactive_border = "rgb(313244)",
         },
 
         resize_on_border = true,
@@ -68,8 +88,9 @@ hl.config({
         rounding       = 10,
         rounding_power = 2,
 
-        active_opacity   = 1.0,
-        inactive_opacity = 0.8,
+        active_opacity   = 0.9,
+        inactive_opacity = 0.7,
+        fullscreen_opacity = 1.0,
 
         shadow = {
             enabled      = true,
@@ -80,14 +101,18 @@ hl.config({
 
         blur = {
             enabled   = true,
-            size      = 6,
-            passes    = 2,
+            size      = 8,
+            passes    = 3,
             vibrancy  = 0.1696,
         },
     },
 
     animations = {
         enabled = true,
+    },
+
+    binds = {
+        workspace_back_and_forth = true,
     },
 })
 
@@ -127,6 +152,7 @@ hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 7,    bezier = "
 hl.config({
     dwindle = {
         preserve_split = true,
+        smart_split = true
     },
 })
 
@@ -150,7 +176,9 @@ hl.config({
 hl.config({
     misc = {
         force_default_wallpaper = -1,
+        disable_splash_rendering = false,
         disable_hyprland_logo   = false,
+        background_color = "0x1e1e2e"
     },
 })
 
@@ -173,6 +201,8 @@ hl.config({
 
         touchpad = {
             natural_scroll = true,
+            disable_while_typing = true,
+            clickfinger_behavior = true
         },
     },
 })
@@ -183,6 +213,25 @@ hl.gesture({
     action = "workspace"
 })
 
+-- Per-device keyboard config
+hl.device({
+    name        = "keyboard-k380-keyboard",
+    kb_layout   = "us",
+    kb_variant  = "intl",
+})
+
+hl.device({
+    name        = "at-translated-set-2-keyboard",
+    kb_layout   = "br",
+    kb_variant  = "",
+})
+
+hl.config({
+    binds = {
+        workspace_back_and_forth = true,
+    },
+})
+
 
 ---------------------
 ---- KEYBINDINGS ----
@@ -190,14 +239,20 @@ hl.gesture({
 
 local mainMod = "SUPER"
 
+hl.bind(mainMod .. " + CTRL + V", hl.dsp.exec_cmd("pypr toggle volume"))
+hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd("pypr zoom"))
+hl.bind(mainMod .. " + ESCAPE", hl.dsp.exec_cmd("pkill -x wlogout || wlogout"))
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({action = "toggle"}))
 hl.bind(mainMod .. " + D", hl.dsp.window.fullscreen({mode = "maximized", action = "toggle"}))
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd(terminal))
+hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("grim -g \"$(slurp)\" - | swappy -f -"))
+hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.float({action = "toggle"}))
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
+
 
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
-hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
-hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
+hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
@@ -228,13 +283,14 @@ hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
--- Laptop multimedia keys for volume and LCD brightness
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),      { locked = true, repeating = true })
-hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),     { locked = true, repeating = true })
-hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),   { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"),                  { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"),                  { locked = true, repeating = true })
+-- Brightness and volume via avizo (OSD notifications)
+hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("lightctl up"),            { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("lightctl down"),          { locked = true, repeating = true })
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("volumectl -u up"),        { locked = true, repeating = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("volumectl -u down"),      { locked = true, repeating = true })
+hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("volumectl toggle-mute"),  { locked = true, repeating = true })
+hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("volumectl -m toggle-mute"), { locked = true, repeating = true })
+hl.bind(mainMod .. " + XF86AudioMute", hl.dsp.exec_cmd("volumectl -m toggle-mute"), { locked = true })
 
 -- Requires playerctl
 hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true })
@@ -246,6 +302,21 @@ hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = tr
 --------------------------------
 ---- WINDOWS AND WORKSPACES ----
 --------------------------------
+
+-- Pyprland scratchpad window rules (required for pypr to manage these windows)
+hl.window_rule({
+    name  = "pypr-term-scratchpad",
+    match = { class = "wezterm_dropdown" },
+    float = true,
+    size  = "75% 60%",
+})
+
+hl.window_rule({
+    name  = "pypr-volume-scratchpad",
+    match = { class = "org.pulseaudio.pavucontrol" },
+    float = true,
+    size  = "40% 70%",
+})
 
 hl.window_rule({
     name  = "suppress-maximize-events",
