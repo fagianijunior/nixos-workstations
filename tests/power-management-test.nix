@@ -15,6 +15,12 @@ pkgs.testers.nixosTest {
     };
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
+
+    # Simulate swap partition for hibernation tests
+    swapDevices = [
+      { device = "/dev/vda2"; }
+    ];
+    boot.resumeDevice = "/dev/vda2";
   };
 
   testScript = ''
@@ -31,8 +37,19 @@ pkgs.testers.nixosTest {
     # Verify TLP configuration is applied
     machine.succeed("tlp-stat --config | grep -q 'CPU_SCALING_GOVERNOR_ON_AC'")
 
-    # Verify logind lid switch configuration
+    # Verify logind lid switch is configured for hibernate
     output = machine.succeed("cat /etc/systemd/logind.conf.d/*.conf || cat /etc/systemd/logind.conf")
-    assert "HandleLidSwitch" in output, f"Lid switch not configured: {output}"
+    assert "HandleLidSwitch=hibernate" in output, f"Lid switch not set to hibernate: {output}"
+    assert "HandleLidSwitchExternalPower=hibernate" in output, f"Lid switch (external power) not set to hibernate: {output}"
+    assert "HandleLidSwitchDocked=ignore" in output, f"Lid switch docked not set to ignore: {output}"
+
+    # Verify hibernation is available as a sleep state
+    sleep_states = machine.succeed("cat /sys/power/state")
+    # Note: 'disk' means hibernation is supported by the kernel
+    assert "disk" in sleep_states, f"Hibernation (disk) not in /sys/power/state: {sleep_states}"
+
+    # Verify resume device is configured in kernel cmdline
+    cmdline = machine.succeed("cat /proc/cmdline")
+    assert "resume=" in cmdline, f"resume= not found in kernel cmdline: {cmdline}"
   '';
 }

@@ -3,6 +3,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./keyboard-resume.nix
     ../../modules/common
     ../../modules/hardware/amd-gpu.nix
     ../../modules/hardware/bluetooth.nix

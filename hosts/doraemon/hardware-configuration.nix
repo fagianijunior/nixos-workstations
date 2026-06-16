@@ -61,6 +61,7 @@
   swapDevices = [
     {
       device = "/dev/disk/by-uuid/4301fbe5-a9db-4c24-a4b3-24a18495d6da";
+      options = [ "discard" ];
     }
   ];
   boot.resumeDevice = "/dev/disk/by-uuid/4301fbe5-a9db-4c24-a4b3-24a18495d6da";

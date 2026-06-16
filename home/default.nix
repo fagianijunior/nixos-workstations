@@ -26,6 +26,9 @@ in
     XDG_SESSION_TYPE = "wayland";
     NIXOS_OZONE_WL = "1";
 
+    # Force uv to use Nix-provided Python (NixOS can't run generic dynamic binaries)
+    UV_PYTHON_PREFERENCE = "only-system";
+
     # Taskwarrior sync
     TASKCHAMPION_CLIENT_ID = "9dc04b7e-40dc-49f7-8a57-49fc7b9f6ea9";
     TASKCHAMPION_ENCRYPTION_SECRET = "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2";
@@ -425,10 +428,17 @@ in
   };
 
   # Hyprland user-level configuration
+  # NOTE: config is mutable (editable without rebuild) — pointed at repo file via symlink
   wayland.windowManager.hyprland = {
     enable = true;
     xwayland.enable = true;
     systemd.enable = false;
+  };
+
+  # Mutable Hyprland Lua config — edit directly, reload with `hyprctl reload`
+  xdg.configFile."hypr/hyprland.lua" = {
+    source = config.lib.file.mkOutOfStoreSymlink
+      "${config.home.homeDirectory}/Workspace/fagianijunior/nixos/home/hyprland.lua";
   };
 
   # Pyprland configuration
@@ -562,11 +572,13 @@ in
     clickup
 
     # Dev tools
+    python3
     nil
     nixpkgs-fmt
     terraform-ls
     rubyPackages.solargraph
     uv
+    nixd
     kiro
   ];
 

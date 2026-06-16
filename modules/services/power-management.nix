@@ -31,14 +31,14 @@
   # Disable power-profiles-daemon (conflicts with TLP)
   services.power-profiles-daemon.enable = false;
 
-  # Lid close actions
+  # Lid close actions — hibernate to preserve state on SSD
   services.logind.settings.Login = {
-    HandleLidSwitch = "suspend";
-    HandleLidSwitchExternalPower = "suspend";
+    HandleLidSwitch = "hibernate";
+    HandleLidSwitchExternalPower = "hibernate";
     HandleLidSwitchDocked = "ignore";
   };
 
-  # Hibernation support (resume from swap)
-  # Note: boot.resumeDevice must be set in host hardware-configuration.nix
-  boot.kernelParams = [ "resume_offset=0" ]; # Placeholder - set actual offset per host
+  # Hibernation support
+  # boot.resumeDevice must be set in host hardware-configuration.nix
+  # For dedicated swap partitions, no resume_offset is needed.
 }
