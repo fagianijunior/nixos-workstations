@@ -485,6 +485,13 @@ in
       "${config.home.homeDirectory}/Workspace/fagianijunior/nixos/home/hyprland.lua";
   };
 
+  # Hyprland Qt6 support style config
+  xdg.configFile."hypr/application-style.conf".text = ''
+    roundness = 3
+    border_width = 2
+    reduce_motion = false
+  '';
+
   # Pyprland configuration
   xdg.configFile."pypr/config.toml".source =
     let
@@ -552,19 +559,19 @@ in
       }
       {
         label = "logout";
-        action = "hyprctl dispatch exit";
+        action = "hyprshutdown";
         text = "Logout";
         keybind = "e";
       }
       {
         label = "shutdown";
-        action = "systemctl poweroff";
+        action = "hyprshutdown -t 'Shutting down...' --post-cmd 'systemctl poweroff'";
         text = "Shutdown";
         keybind = "s";
       }
       {
         label = "reboot";
-        action = "systemctl reboot";
+        action = "hyprshutdown -t 'Restarting...' --post-cmd 'systemctl reboot'";
         text = "Reboot";
         keybind = "r";
       }
@@ -615,6 +622,9 @@ in
     poweralertd
     psi-notify
     hyprpolkitagent
+    hyprland-qt-support
+    hyprland-qtutils
+    hyprshutdown
     pavucontrol
     swappy
     gimp

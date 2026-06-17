@@ -40,17 +40,18 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("poweralertd")
   hl.exec_cmd("avizo-service")
   hl.exec_cmd("systemctl --user start psi-notify")
-  hl.exec_cmd("systemctl --user start hyprpolkitagent")
 
   -- Clipboard history
   hl.exec_cmd("wl-paste --type text --watch cliphist store")
   hl.exec_cmd("wl-paste --type image --watch cliphist store")
 
   -- Apps on specific workspaces
+  -- Workspace 3 layout (dwindle): clickup=left half, telegram=top-right, slack=bottom-right
+  -- Order of mapping determines position in dwindle: 1st=full, 2nd=right split, 3rd=bottom-right split
   hl.exec_cmd("[workspace 1] " .. browser)
   hl.exec_cmd("[workspace 3] clickup")
-  hl.exec_cmd("[workspace 3] slack")
   hl.exec_cmd("[workspace 3] Telegram")
+  hl.exec_cmd("[workspace 3] slack")
 end)
 
 -- Clean shutdown: stop session target so systemd services stop gracefully
@@ -258,7 +259,7 @@ hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
 
 
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
-hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
+hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("hyprshutdown"))
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("pypr menu"))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
