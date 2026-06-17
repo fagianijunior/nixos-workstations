@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "appColors": {
+    "firefox": "#8aadf4",
+    "chrome": "#8aadf4",
+    "chromium": "#8aadf4",
+    "thunderbird": "#a6da95",
+    "discord": "#c6a0f6",
+    "spotify": "#f5a97f",
+    "code": "#eed49f",
+    "vscode": "#eed49f",
+    "terminal": "#eed49f",
+    "steam": "#f5bde6",
+    "vlc": "#f5a97f",
+    "libreoffice": "#c6a0f6",
+    "gimp": "#f5bde6",
+    "blender": "#f5a97f",
+    "telegram": "#8bd5ca",
+    "slack": "#a6da95",
+    "teams": "#8aadf4",
+    "zoom": "#8aadf4",
+    "obs": "#ed8796",
+    "audacity": "#f5a97f",
+    "inkscape": "#c6a0f6",
+    "krita": "#f5bde6",
+    "system-settings": "#ed8796",
+    "nautilus": "#8bd5ca",
+    "dolphin": "#8bd5ca",
+    "thunar": "#8bd5ca"
+  },
+  "categoryColors": {
+    "browser": "#8aadf4",
+    "communication": "#a6da95",
+    "media": "#f5a97f",
+    "development": "#eed49f",
+    "system": "#ed8796",
+    "productivity": "#c6a0f6",
+    "gaming": "#f5bde6",
+    "utility": "#8bd5ca",
+    "default": "#b7bdf8"
+  }
+}

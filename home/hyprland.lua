@@ -31,9 +31,11 @@ local browser     = "firefox --ProfileManager"
 
 -- See https://wiki.hypr.land/Configuring/Basics/Autostart/
 hl.on("hyprland.start", function()
-  -- Core services
-  hl.exec_cmd("hyprpaper")
-  hl.exec_cmd("hypridle")
+  -- Start hyprland-session.target which activates graphical-session.target
+  -- This auto-starts all user services: hyprpaper, hypridle, hyprlauncher, quickshell
+  hl.exec_cmd("systemctl --user start hyprland-session.target")
+
+  -- Core services (not managed by systemd)
   hl.exec_cmd("pypr")
   hl.exec_cmd("poweralertd")
   hl.exec_cmd("avizo-service")
@@ -49,6 +51,11 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("[workspace 3] clickup")
   hl.exec_cmd("[workspace 3] slack")
   hl.exec_cmd("[workspace 3] Telegram")
+end)
+
+-- Clean shutdown: stop session target so systemd services stop gracefully
+hl.on("hyprland.shutdown", function()
+  os.execute("systemctl --user stop hyprland-session.target && sleep 0.1")
 end)
 
 -------------------------------
@@ -174,9 +181,9 @@ hl.config({
 
 hl.config({
     misc = {
-        force_default_wallpaper = -1,
-        disable_splash_rendering = false,
-        disable_hyprland_logo   = false,
+        force_default_wallpaper = 0,
+        disable_splash_rendering = true,
+        disable_hyprland_logo   = true,
         background_color = "0x1e1e2e"
     },
 })

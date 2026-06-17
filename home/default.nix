@@ -1,4 +1,4 @@
-{ config, pkgs, lib, catppuccin, ... }:
+{ config, pkgs, catppuccin, ... }:
 
 let
   lock-false = {
@@ -14,6 +14,9 @@ in
   imports = [
     catppuccin.homeModules.catppuccin
     ./kiro-mcp.nix
+    ./quickshell.nix
+    ./taskwarrior
+    ./taskwarrior-tui
   ];
 
   home.username = "terabytes";
@@ -428,11 +431,11 @@ in
   services.hyprpaper = {
     enable = true;
     settings = {
-      preload = [
-        "${config.home.homeDirectory}/.background"
-      ];
       wallpaper = [
-        ",${config.home.homeDirectory}/.background"
+        {
+          monitor = "";
+          path = "${config.home.homeDirectory}/.background";
+        }
       ];
     };
   };
@@ -471,7 +474,9 @@ in
   wayland.windowManager.hyprland = {
     enable = true;
     xwayland.enable = true;
-    systemd.enable = false;
+    # systemd.enable creates hyprland-session.target and imports env vars to systemd/dbus.
+    # The actual start/stop hooks are in hyprland.lua since we use an external Lua config.
+    systemd.enable = true;
   };
 
   # Mutable Hyprland Lua config — edit directly, reload with `hyprctl reload`
@@ -609,7 +614,6 @@ in
     hyprpicker
     poweralertd
     psi-notify
-    quickshell
     hyprpolkitagent
     pavucontrol
     swappy
@@ -621,6 +625,7 @@ in
 
     # Dev tools
     python3
+    nodejs
     nil
     nixpkgs-fmt
     terraform-ls
