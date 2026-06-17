@@ -68,13 +68,17 @@
     execWheelOnly = true;
   };
 
+  # nix-ld - dynamic linking for external binaries (e.g. kiro-cli)
+  programs.nix-ld.enable = true;
+
   # Fish shell
   programs.fish.enable = true;
 
   # Base system packages
   environment.systemPackages = with pkgs; [
     git
-    vim
+    vim-full
+    wl-clipboard
     curl
     wget
     htop

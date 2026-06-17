@@ -13,6 +13,7 @@ in
 {
   imports = [
     catppuccin.homeModules.catppuccin
+    ./kiro-mcp.nix
   ];
 
   home.username = "terabytes";
@@ -627,6 +628,9 @@ in
     uv
     nixd
     kiro
+    kiro-cli
+    github-mcp-server
+    awscli2
   ];
 
   # Firefox

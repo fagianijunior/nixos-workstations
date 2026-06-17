@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ pkgs, ... }:
 
 {
   # Disable NetworkManager
@@ -62,4 +62,15 @@
 
   # tailscale
   services.tailscale.enable = true;
+
+  # Unblock Wi-Fi on boot (some hardware soft-blocks wlan by default)
+  systemd.services.rfkill-unblock-wlan = {
+    description = "Unblock WLAN at boot";
+    after = [ "systemd-rfkill.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.util-linux}/bin/rfkill unblock wlan";
+    };
+  };
 }
