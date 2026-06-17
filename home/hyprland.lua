@@ -20,11 +20,10 @@ hl.monitor({
 ---- MY PROGRAMS ----
 ---------------------
 
-local terminal    = "kitty"
-local fileManager = "dolphin"
+local terminal    = "wezterm"
+local fileManager = "$terminal -e yazi"
 local menu        = "hyprlauncher"
-local browser     = "firefox"
-
+local browser     = "firefox --ProfileManager"
 
 -------------------
 ---- AUTOSTART ----
@@ -49,7 +48,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("[workspace 1] " .. browser)
   hl.exec_cmd("[workspace 3] clickup")
   hl.exec_cmd("[workspace 3] slack")
-  hl.exec_cmd("[workspace 3] telegram-desktop")
+  hl.exec_cmd("[workspace 3] Telegram")
 end)
 
 -------------------------------
@@ -240,6 +239,7 @@ hl.config({
 local mainMod = "SUPER"
 
 hl.bind(mainMod .. " + CTRL + V", hl.dsp.exec_cmd("pypr toggle volume"))
+hl.bind(mainMod .. " + CTRL + RETURN", hl.dsp.exec_cmd("pypr toggle term"))
 hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd("pypr zoom"))
 hl.bind(mainMod .. " + ESCAPE", hl.dsp.exec_cmd("pkill -x wlogout || wlogout"))
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({action = "toggle"}))
@@ -252,7 +252,7 @@ hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
 
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
-hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))
+hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("pypr menu"))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
@@ -342,4 +342,23 @@ hl.window_rule({
     match = { class = "hyprland-run" },
     move  = "20 monitor_h-120",
     float = true,
+})
+
+hl.window_rule({
+    name = "Picture-in-Picture",
+    match = { title = "Picture-in-Picture" },
+    float = true,
+    opacity = "1",
+})
+
+hl.window_rule({
+    name = "Youtube",
+    match = { title = "^(.*)(Youtube)(.*)$" },
+    opacity = "1",
+})
+
+hl.window_rule({
+    name = "Netflix",
+    match = { title = "^(Netflix)(.*)$" },
+    opacity = "1",
 })

@@ -38,7 +38,6 @@ pkgs.testers.nixosTest {
     machine.succeed("which wl-copy")
     machine.succeed("which grim")
     machine.succeed("which slurp")
-    machine.succeed("which wofi")
     machine.succeed("which brightnessctl")
     machine.succeed("which playerctl")
     machine.succeed("which pamixer")

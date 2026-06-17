@@ -50,6 +50,14 @@
         };
       };
 
+      devShells.${system}.default = pkgs.mkShell {
+        packages = with pkgs; [
+          nil
+          nixfmt
+          nixd
+        ];
+      };
+
       checks.${system} = {
         boot = import ./tests/boot-test.nix { inherit pkgs self; };
         pipewire = import ./tests/pipewire-test.nix { inherit pkgs self; };
