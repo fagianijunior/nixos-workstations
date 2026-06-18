@@ -18,6 +18,21 @@
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
+  # Fix: tela apagando ao voltar da hibernação (prompt LUKS)
+  # - amdgpu.sg_display=0: desativa scatter/gather display (bug em APUs Rembrandt no resume)
+  # - video=eDP-1:1920x1080@60: força resolução fixa no console, evitando troca de modo
+  boot.kernelParams = [
+    "amdgpu.sg_display=0"
+    "video=eDP-1:1920x1200@60"
+  ];
+
+  # Hibernação: forçar imagem mínima para evitar "Not enough free memory" (Error -12)
+  # Com image_size=0, o kernel descarta todo o cache descartável antes de criar o snapshot,
+  # maximizando páginas disponíveis para a imagem.
+  # systemd.tmpfiles.rules = [
+  #   "w /sys/power/image_size - - - - 0"
+  # ];
+
   # LUKS encryption
   boot.initrd.luks.devices."cryptroot" = {
     device = "/dev/disk/by-uuid/1c8c316d-091c-4d26-b4b9-ab6012041559";
