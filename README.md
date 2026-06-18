@@ -22,6 +22,7 @@ Configuração NixOS declarativa para duas máquinas usando Nix Flakes.
 
 ## Estrutura
 
+
 ```
 .
 ├── flake.nix                 # Entrypoint do flake

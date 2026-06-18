@@ -14,6 +14,7 @@ in
   imports = [
     catppuccin.homeModules.catppuccin
     ./kiro-mcp.nix
+    ./neovim
     ./quickshell.nix
     ./taskwarrior
     ./taskwarrior-tui
@@ -636,10 +637,7 @@ in
     # Dev tools
     python3
     nodejs
-    nil
     nixpkgs-fmt
-    terraform-ls
-    rubyPackages.solargraph
     uv
     nixd
     kiro

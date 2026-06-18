@@ -16,6 +16,10 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      pkgsUnfree = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
     in
     {
       nixosConfigurations = {
@@ -69,6 +73,7 @@
         security = import ./tests/security-test.nix { inherit pkgs self; };
         power-management = import ./tests/power-management-test.nix { inherit pkgs self; };
         home-manager = import ./tests/home-manager-test.nix { inherit pkgs self; };
+        neovim = import ./tests/neovim-test.nix { pkgs = pkgsUnfree; inherit self; };
       };
     };
 }
