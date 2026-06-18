@@ -31,6 +31,10 @@ in
     XDG_SESSION_TYPE = "wayland";
     NIXOS_OZONE_WL = "1";
 
+    # Cursor theme for Hyprland/Wayland
+    XCURSOR_THEME = "catppuccin-macchiato-blue-cursors";
+    XCURSOR_SIZE = "24";
+
     # Force uv to use Nix-provided Python (NixOS can't run generic dynamic binaries)
     UV_PYTHON_PREFERENCE = "only-system";
 
@@ -493,6 +497,24 @@ in
     reduce_motion = false
   '';
 
+  # Hyprtoolkit theme — Catppuccin Macchiato Blue
+  xdg.configFile."hypr/hyprtoolkit.conf".text = ''
+    background = 0xFF24273a
+    base = 0xFF1e2030
+    text = 0xFFcad3f5
+    alternate_base = 0xFF363a4f
+    bright_text = 0xFFf4dbd6
+    accent = 0xFF8aadf4
+    accent_secondary = 0xFF7dc4e4
+    font_family = FiraCode Nerd Font Mono
+    font_family_monospace = JetBrains Mono Nerd Font
+    font_size = 11
+    small_font_size = 10
+    icon_theme = Papirus-Dark
+    rounding_large = 10
+    rounding_small = 5
+  '';
+
   # Pyprland configuration
   xdg.configFile."pypr/config.toml".source =
     let
@@ -547,7 +569,24 @@ in
       name = "FiraCode Nerd Font Mono";
       size = 10;
     };
+    cursorTheme = {
+      name = "catppuccin-macchiato-blue-cursors";
+      package = pkgs.catppuccin-cursors.macchiatoBlue;
+      size = 24;
+    };
   };
+
+  # Workaround: hyprlauncher (hyprtoolkit) looks for icons in ~/.icons instead of XDG_DATA_DIRS
+  # See: https://github.com/hyprwm/hyprlauncher/issues/105
+  home.file.".icons/default/index.theme".text = ''
+    [Icon Theme]
+    Inherits=Papirus-Dark
+  '';
+  home.file.".icons/Papirus-Dark".source = "${pkgs.catppuccin-papirus-folders.override {
+    flavor = "macchiato";
+    accent = "blue";
+  }}/share/icons/Papirus-Dark";
+  home.file.".icons/hicolor".source = "${pkgs.hicolor-icon-theme}/share/icons/hicolor";
 
   programs.wlogout = {
     enable = true;
