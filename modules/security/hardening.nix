@@ -5,17 +5,21 @@
   networking.firewall = {
     enable = true;
     allowedTCPPorts = [ ]; # No open ports by default
-    allowedUDPPorts = [ config.services.tailscale.port ]; # No open ports by default
-    trustedInterfaces = [ "tailscale0" ];
+    allowedUDPPorts = [ config.services.tailscale.port ];
+    trustedInterfaces = [ "tailscale0" "docker0" "br-+" ];
     # Steam remote play ports are managed by programs.steam.remotePlay.openFirewall
   };
   networking.nftables.enable = true;
 
   # Kernel hardening (SECURITY-09)
   boot.kernel.sysctl = {
-    # Disable IP forwarding
-    "net.ipv4.ip_forward" = 0;
+    # Enable IP forwarding (required for Docker networking)
+    "net.ipv4.ip_forward" = 1;
     "net.ipv6.conf.all.forwarding" = 0;
+
+    # Disable bridge-nf-call-iptables: prevents nftables/iptables from filtering
+    # bridge traffic between containers on the same network (Docker handles its own isolation)
+    "net.bridge.bridge-nf-call-iptables" = 0;
 
     # Prevent SYN flood attacks
     "net.ipv4.tcp_syncookies" = 1;

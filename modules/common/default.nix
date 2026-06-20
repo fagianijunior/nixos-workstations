@@ -68,7 +68,7 @@
   users.users.terabytes = {
     isNormalUser = true;
     description = "Carlos Fagiani Junior";
-    extraGroups = [ "wheel" "video" "audio" ];
+    extraGroups = [ "wheel" "video" "audio" "docker" ];
     shell = pkgs.fish;
   };
 
@@ -104,7 +104,17 @@
     ssm-session-manager-plugin
     zip
     jq
+    docker-compose
   ];
+
+  # Docker
+  virtualisation.docker = {
+    enable = true;
+    autoPrune = {
+      enable = true;
+      dates = "weekly";
+    };
+  };
 
   # Enable dbus
   services.dbus.enable = true;
