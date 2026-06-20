@@ -30,6 +30,7 @@
             catppuccin.nixosModules.catppuccin
             home-manager.nixosModules.home-manager
             {
+              home-manager.backupFileExtension = "backup";
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
               home-manager.users.terabytes = import ./home/default.nix;
@@ -45,6 +46,7 @@
             catppuccin.nixosModules.catppuccin
             home-manager.nixosModules.home-manager
             {
+              home-manager.backupFileExtension = "backup";
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
               home-manager.users.terabytes = import ./home/default.nix;
@@ -74,6 +76,7 @@
         power-management = import ./tests/power-management-test.nix { inherit pkgs self; };
         home-manager = import ./tests/home-manager-test.nix { inherit pkgs self; };
         neovim = import ./tests/neovim-test.nix { pkgs = pkgsUnfree; inherit self; };
+        devenv-direnv = import ./tests/devenv-direnv-test.nix { inherit pkgs self; };
       };
     };
 }

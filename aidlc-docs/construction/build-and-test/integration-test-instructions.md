@@ -1,84 +1,55 @@
-# Integration Test Instructions — Neovim Integration
+# Integration Test Instructions — Devenv + Direnv Integration
 
-## Propósito
+## Purpose
+Validar que devenv e direnv funcionam juntos em um projeto real após aplicar a configuração.
 
-Verificar que o módulo Neovim integra corretamente com o restante do sistema:
-- Home Manager activation inclui Neovim
-- Catppuccin autoEnable aplica tema ao Neovim
-- Pacotes de home.packages não conflitam com extraPackages
-- nixos-rebuild switch funciona sem erros
+## Test Scenarios
 
-## Cenário 1: Home Manager Integration
+### Scenario 1: devenv init + direnv allow
+- **Description**: Criar um projeto devenv e verificar que direnv ativa automaticamente
+- **Setup**: Aplicar configuração NixOS (`nixos-rebuild switch`)
+- **Test Steps**:
+  1. Criar diretório temporário: `mkdir /tmp/test-devenv && cd /tmp/test-devenv`
+  2. Inicializar devenv: `devenv init`
+  3. Permitir direnv: `direnv allow`
+  4. Verificar que ambiente foi ativado (variáveis carregadas)
+- **Expected Results**: direnv carrega o ambiente devenv automaticamente
+- **Cleanup**: `rm -rf /tmp/test-devenv`
 
-### Descrição
-Verificar que o Neovim é corretamente ativado pelo Home Manager como parte da configuração do usuário terabytes.
+### Scenario 2: direnv silent mode
+- **Description**: Verificar que direnv não emite logs excessivos
+- **Setup**: Configuração aplicada com `programs.direnv.silent = true`
+- **Test Steps**:
+  1. Entrar em um diretório com `.envrc`
+  2. Observar output do shell
+- **Expected Results**: Nenhum log de direnv no prompt (modo silencioso)
 
-### Comando
+### Scenario 3: nix-direnv caching
+- **Description**: Verificar que nix-direnv cacheia environments corretamente
+- **Setup**: Projeto com `use flake` no `.envrc`
+- **Test Steps**:
+  1. Criar `.envrc` com `use flake`
+  2. Permitir: `direnv allow`
+  3. Sair e entrar no diretório novamente
+- **Expected Results**: Segunda entrada é instantânea (cached)
+
+## Run Integration Tests
+
+### Execução Manual (pós-deploy)
+Estes testes são manuais e devem ser executados após `nixos-rebuild switch`:
+
 ```bash
-# O teste neovim-test.nix já cobre isso via runNixOSTest:
-nix build .#checks.x86_64-linux.neovim -L
+# Verificar devenv está disponível
+devenv version
+
+# Verificar direnv está silencioso
+cd /tmp && mkdir test-int && cd test-int
+echo 'export TEST_VAR=hello' > .envrc
+direnv allow
+# Verificar: sem output de direnv, mas $TEST_VAR disponível
+echo $TEST_VAR  # deve imprimir "hello"
+rm -rf /tmp/test-int
 ```
 
-### Verificação Manual (pós-deploy)
-```bash
-# Verificar que Home Manager gerencia Neovim
-home-manager generations | head -1
-
-# Verificar que nvim é o EDITOR
-echo $EDITOR  # Deve ser "nvim"
-echo $VISUAL  # Deve ser "nvim"
-```
-
-## Cenário 2: Catppuccin Theme Integration
-
-### Descrição
-Verificar que o catppuccin autoEnable do Home Manager funciona em conjunto com os overrides Lua.
-
-### Verificação
-```bash
-# Dentro do Neovim:
-:echo g:colors_name
-# Esperado: catppuccin-macchiato
-
-# Verificar integração com telescope:
-:Telescope colorscheme
-# O tema deve estar listado e ativo
-```
-
-## Cenário 3: Não-Conflito com home.packages
-
-### Descrição
-Verificar que a remoção de `nil`, `terraform-ls`, `solargraph` do home.packages não quebra outros componentes.
-
-### Verificação
-```bash
-# nixd (mantido em home.packages) deve estar disponível para Kiro MCP
-which nixd
-
-# terraform-ls (agora em extraPackages do neovim) ainda disponível globalmente
-which terraform-ls
-
-# LSPs só acessíveis dentro do wrapper do nvim?
-# Não — extraPackages adiciona ao PATH do usuário via wrapper
-```
-
-## Cenário 4: Coexistência com Outros Módulos
-
-### Descrição
-Verificar que nenhum módulo existente (quickshell, taskwarrior, etc.) é afetado.
-
-### Comando
-```bash
-# Executar todos os testes para verificar que nada quebrou:
-nix flake check --no-build
-# Esperado: all checks passed
-```
-
-## Status de Integração
-
-| Cenário | Método de Teste | Status |
-|---------|----------------|--------|
-| Home Manager Integration | runNixOSTest | ✅ Coberto por neovim-test.nix |
-| Catppuccin Theme | runNixOSTest (colorscheme check) | ✅ Coberto |
-| Não-Conflito packages | nix flake check --no-build | ✅ Passa |
-| Coexistência módulos | nix flake check --no-build | ✅ Passa |
+## Nota
+O teste automatizado em `tests/devenv-direnv-test.nix` cobre a validação de sistema (binários e nix.conf). Os cenários acima são complementares para validação pós-deploy.

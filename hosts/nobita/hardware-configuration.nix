@@ -1,4 +1,4 @@
-{ config, lib, pkgs, modulesPath, ... }:
+{ config, lib, modulesPath, ... }:
 
 {
   imports = [
@@ -13,56 +13,38 @@
     "usbhid"
     "sd_mod"
   ];
-  boot.initrd.kernelModules = [ "amdgpu" "dm-snapshot" ];
+  boot.initrd.kernelModules = [ "amdgpu" ];
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
-
-  # LUKS encryption
-  boot.initrd.luks.devices."cryptroot" = {
-    device = "/dev/disk/by-uuid/REPLACE-WITH-LUKS-UUID";
-    preLVM = true;
-    allowDiscards = true; # Enable TRIM for SSD
-  };
-
-  # Btrfs subvolumes
+  
   fileSystems."/" = {
-    device = "/dev/mapper/cryptroot";
-    fsType = "btrfs";
-    options = [ "subvol=@" "compress=zstd" "noatime" ];
+    device = "/dev/disk/by-uuid/8f4d7ea0-475b-4c46-b01a-a2e98fca897d";
+    fsType = "ext4";
+    neededForBoot = true;
   };
 
   fileSystems."/home" = {
-    device = "/dev/mapper/cryptroot";
-    fsType = "btrfs";
-    options = [ "subvol=@home" "compress=zstd" "noatime" ];
-  };
-
-  fileSystems."/nix" = {
-    device = "/dev/mapper/cryptroot";
-    fsType = "btrfs";
-    options = [ "subvol=@nix" "compress=zstd" "noatime" ];
-  };
-
-  fileSystems."/.snapshots" = {
-    device = "/dev/mapper/cryptroot";
-    fsType = "btrfs";
-    options = [ "subvol=@snapshots" "compress=zstd" "noatime" ];
-  };
+      device = "/dev/disk/by-uuid/d24c93e7-4461-4fbe-878e-430a8f20ce4d";
+      fsType = "ext4";
+    };
 
   # EFI boot partition
   fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/REPLACE-WITH-EFI-UUID";
+    device = "/dev/disk/by-uuid/9F4B-576C";
     fsType = "vfat";
-    options = [ "fmask=0022" "dmask=0022" ];
+    options = [ "fmask=0077" "dmask=0077" ];
+    neededForBoot = true;
   };
+
 
   # Swap with hibernation support
   swapDevices = [
     {
-      device = "/dev/disk/by-uuid/REPLACE-WITH-SWAP-UUID";
+      device = "/dev/disk/by-uuid/336bdc5c-2367-4569-a0c3-965923750214";
+      options = [ "discard" "nofail" ]; # Enable discard/TRIM for swap on SSDs.
     }
   ];
-  boot.resumeDevice = "/dev/disk/by-uuid/REPLACE-WITH-SWAP-UUID";
+  boot.resumeDevice = "/dev/disk/by-uuid/336bdc5c-2367-4569-a0c3-965923750214";
 
   # Hardware platform
   # TUF GAMING B450-PLUS II, AMD Ryzen 7 5700, Navi 23 RX 6600 XT

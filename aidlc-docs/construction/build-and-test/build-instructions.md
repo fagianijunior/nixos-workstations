@@ -1,68 +1,44 @@
-# Build Instructions — Neovim Integration
+# Build Instructions — Devenv + Direnv Integration
 
 ## Prerequisites
-- **Build Tool**: Nix Flakes (nix >= 2.18)
-- **Dependencies**: Gerenciadas pelo flake.lock (pinned)
-- **Environment Variables**: Nenhuma necessária
-- **System Requirements**: NixOS ou Nix instalado em qualquer Linux
+- **Build Tool**: Nix (with flakes enabled)
+- **System**: NixOS com nixos-unstable
+- **Flake**: `/home/terabytes/Workspace/fagianijunior/nixos/flake.nix`
 
 ## Build Steps
 
-### 1. Avaliação do Flake (Verificação de Sintaxe e Tipagem)
+### 1. Validate Flake Evaluation
 ```bash
-cd /home/terabytes/Workspace/fagianijunior/nixos
+cd ~/Workspace/fagianijunior/nixos
 nix flake check --no-build
 ```
-**Resultado esperado**: `all checks passed`
 
-### 2. Build da Configuração Completa (Opcional — Build Completo)
+### 2. Build NixOS Configuration (Nobita)
 ```bash
-# Build da configuração do Nobita (inclui Neovim via Home Manager)
-nix build .#nixosConfigurations.nobita.config.system.build.toplevel --no-link
-
-# Build da configuração do Doraemon
-nix build .#nixosConfigurations.doraemon.config.system.build.toplevel --no-link
-```
-**Nota**: Build completo requer download de todos os pacotes. Pode levar 10-30 minutos na primeira execução.
-
-### 3. Build do Teste de Neovim (VM Test)
-```bash
-nix build .#checks.x86_64-linux.neovim
-```
-**Nota**: Executa o teste em uma VM NixOS. Requer KVM habilitado.
-
-### 4. Aplicar Configuração no Sistema (Deploy)
-```bash
-# No host alvo (Nobita ou Doraemon):
-sudo nixos-rebuild switch --flake ~/Workspace/fagianijunior/nixos#$(hostname)
+sudo nixos-rebuild build --flake .#nobita
 ```
 
-## Verificação Pós-Deploy
-
+### 3. Build NixOS Configuration (Doraemon)
 ```bash
-# Verificar que Neovim está instalado e funcional
-nvim --version
-
-# Verificar que LSPs estão disponíveis
-which nixd terraform-ls solargraph intelephense pyright lua-language-server bash-language-server dockerfile-language-server
-
-# Verificar que formatadores estão disponíveis
-which nixpkgs-fmt prettier stylua rubocop php-cs-fixer black shfmt terraform
-
-# Verificar que Neovim inicia sem erros
-nvim --headless +qall
+sudo nixos-rebuild build --flake .#doraemon
 ```
+
+### 4. Apply Configuration (switch)
+```bash
+sudo nixos-rebuild switch --flake .#$(hostname)
+```
+
+## Verify Build Success
+- **Expected Output**: `nix flake check --no-build` retorna 0 sem erros
+- **Build Artifacts**: Derivações no `/nix/store`
+- **Common Warnings**: `Git tree is dirty` (normal antes de commit)
 
 ## Troubleshooting
 
-### Build Fails com "not tracked by Git"
-- **Causa**: Arquivos novos não foram adicionados ao Git
-- **Solução**: `git add home/neovim/ tests/neovim-test.nix`
+### "Path not tracked by Git"
+- **Cause**: Novo arquivo criado mas não adicionado ao Git
+- **Solution**: `git add <file>` antes de rodar `nix flake check`
 
-### Build Fails com "unfree package"
-- **Causa**: `intelephense` é unfree
-- **Solução**: Verificar que `nixpkgs.config.allowUnfree = true` está em `modules/services/gaming.nix` (já configurado)
-
-### Build Fails com "renamed option"
-- **Causa**: API mudou no nixos-unstable
-- **Solução**: Adotar nova API imediatamente. Verificar steering rules em `.kiro/steering/nix-unstable.md`
+### "error: attribute 'devenv' missing"
+- **Cause**: nixpkgs não contém devenv (improvável em unstable)
+- **Solution**: Verificar que flake.lock está atualizado: `nix flake update`

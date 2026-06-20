@@ -1,51 +1,36 @@
-# Unit Test Execution — Neovim Integration
+# Unit Test Execution — Devenv + Direnv Integration
 
-## Contexto
+## Run Unit Tests
 
-No ecossistema NixOS, "unit tests" são implementados via `runNixOSTest` (testes em VM). O teste `neovim-test.nix` verifica:
-
-1. Neovim inicia sem erros
-2. Todos 8 LSPs estão disponíveis no PATH
-3. Todos 8 formatadores estão disponíveis no PATH
-4. 13 plugins carregam sem erros (via `require()`)
-5. Colorscheme catppuccin está ativo
-6. Treesitter parsers (>= 20) estão instalados
-
-## Executar Teste de Neovim
-
-### 1. Executar via nix build
+### 1. Execute All NixOS Tests (evaluation only)
 ```bash
-cd /home/terabytes/Workspace/fagianijunior/nixos
-nix build .#checks.x86_64-linux.neovim -L
+cd ~/Workspace/fagianijunior/nixos
+nix flake check --no-build
 ```
-O flag `-L` mostra logs em tempo real.
 
-### 2. Verificar Resultado
-- **Sucesso**: Derivação construída sem erros, link simbólico `result/` criado
-- **Falha**: Erro no output com detalhes do teste que falhou
+Este comando avalia todas as derivações de teste sem construí-las. Garante que a configuração é sintaticamente correta e avalia sem erros.
 
-### 3. Executar Todos os Testes do Projeto
+### 2. Execute Only the Devenv-Direnv Test (full build)
 ```bash
-nix flake check -L
+nix build .#checks.x86_64-linux.devenv-direnv
 ```
-Executa TODOS os 11 testes (boot, pipewire, networking, bluetooth, gpu, hyprland, desktop-tools, security, power-management, home-manager, neovim).
 
-## Resultados Esperados
+Este comando constrói e executa o teste NixOS VM completo para devenv-direnv.
 
-| Teste | Verificação | Status |
-|-------|-------------|--------|
-| Neovim starts | `nvim --headless +qall` | ✅ |
-| LSPs in PATH | `which nixd terraform-ls ...` | ✅ |
-| Formatters in PATH | `which nixpkgs-fmt prettier ...` | ✅ |
-| Plugins load | `lua require("telescope")` etc. | ✅ |
-| Colorscheme | `g:colors_name == catppuccin` | ✅ |
-| Treesitter parsers | `>= 20 parser/*.so files` | ✅ |
+### 3. Review Test Results
+- **Expected**: Todos os assertions passam (devenv binary, nix.conf entries)
+- **Test Report**: Output no terminal com status pass/fail
+- **Cenários cobertos**:
+  - devenv binary existe no PATH do sistema
+  - devenv version executa com sucesso
+  - nix.conf contém substituter do devenv cachix
+  - nix.conf contém trusted-public-key do devenv cachix
+  - nix.conf contém @wheel em trusted-users
+  - nix.conf contém flakes em experimental-features
 
-## Fix Failing Tests
-
-Se testes falham:
-1. Verificar output com `-L` para identificar qual assertion falhou
-2. Se LSP/formatter não encontrado: verificar nome do pacote em `home/neovim/default.nix` extraPackages
-3. Se plugin não carrega: verificar nome do require() no arquivo Lua correspondente
-4. Se colorscheme errado: verificar ordem de carregamento (catppuccin.lua deve ser primeiro plugin)
-5. Rebuildar: `nix build .#checks.x86_64-linux.neovim -L`
+### 4. Fix Failing Tests
+Se testes falharem:
+1. Verificar output de erro do NixOS test
+2. Verificar que `modules/common/default.nix` contém as entradas corretas
+3. Verificar que `devenv` está em `environment.systemPackages`
+4. Re-executar `nix flake check --no-build`

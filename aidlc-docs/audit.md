@@ -221,3 +221,107 @@
 **Context**: CONSTRUCTION - Build and Test approved. All AI-DLC stages complete for this feature.
 
 ---
+
+## Devenv + Direnv Integration — New Request
+**Timestamp**: 2026-06-19T00:00:00Z
+**User Input**: "Usando AI-DLC adicione e configure o devenv e direnv."
+**AI Response**: "Workspace Detection: Brownfield project with existing NixOS flake. programs.direnv already configured in home/default.nix with nix-direnv. Proceeding to Requirements Analysis for devenv + direnv enhancement."
+**Context**: INCEPTION - Workspace Detection for Devenv/Direnv Integration. Brownfield project.
+
+---
+
+## Devenv + Direnv Integration — Requirements Questions Created
+**Timestamp**: 2026-06-19T00:01:00Z
+**AI Response**: "Created devenv-direnv-questions.md with 8 questions covering: scope of changes (devenv only vs full review), cachix cache configuration, trusted-users, direnv.toml options, config location, installation method, and extension opt-ins (security + PBT)."
+**Context**: INCEPTION - Requirements Analysis, Step 6 (Generate Clarifying Questions). Awaiting user answers.
+
+---
+
+## Devenv + Direnv Integration — Answers Received
+**Timestamp**: 2026-06-19T00:02:00Z
+**User Input**: "Respondido"
+**AI Response**: "Processing answers from devenv-direnv-questions.md. All 8 questions answered clearly. No contradictions detected. Q1=C (full review), Q2=A (add cachix substituter), Q3=A (trusted-users — already covered by @wheel), Q4=A (warn_timeout + hide_env_diff + silent), Q5=A (dedicated module), Q6=B (system-wide devenv), Q7=A (Security Baseline enabled), Q8=C (PBT disabled). Generating requirements document."
+**Context**: INCEPTION - Requirements Analysis. All questions answered without ambiguity. Proceeding to requirements document generation.
+
+---
+
+## Devenv + Direnv Integration — Requirements Document Generated
+**Timestamp**: 2026-06-19T00:03:00Z
+**AI Response**: "Requirements document generated at aidlc-docs/inception/requirements/devenv-direnv-requirements.md. 7 functional requirements, 4 non-functional requirements. Extension Configuration: Security Baseline=Yes (full), PBT=No. Stage marked complete in aidlc-state.md."
+**Context**: INCEPTION - Requirements Analysis complete. Awaiting user approval.
+
+---
+
+## Devenv + Direnv Integration — Requirements Approved
+**Timestamp**: 2026-06-19T00:04:00Z
+**User Input**: "Continue"
+**AI Response**: "Requirements approved. Proceeding to Workflow Planning."
+**Context**: INCEPTION - Requirements Analysis approved. Moving to Workflow Planning.
+
+---
+
+## Devenv + Direnv Integration — Workflow Planning Complete
+**Timestamp**: 2026-06-19T00:05:00Z
+**AI Response**: "Execution plan created at aidlc-docs/inception/plans/devenv-direnv-execution-plan.md. Streamlined: skip all intermediate design stages, proceed to Code Generation then Build and Test. Risk: Low. Estimated ~4 files."
+**Context**: INCEPTION - Workflow Planning complete. Awaiting user approval before CONSTRUCTION.
+
+---
+
+## Devenv + Direnv Integration — Workflow Planning Approved
+**Timestamp**: 2026-06-19T00:06:00Z
+**User Input**: "Continue"
+**AI Response**: "Workflow plan approved. Proceeding to Code Generation (Part 1: Planning)."
+**Context**: INCEPTION - Workflow Planning approved. Moving to Code Generation.
+
+---
+
+## Devenv + Direnv Integration — Code Generation Part 1 (Planning)
+**Timestamp**: 2026-06-19T00:07:00Z
+**AI Response**: "Code generation plan created at aidlc-docs/construction/plans/devenv-direnv-code-generation-plan.md. Plan has 5 steps: modify common module (add devenv + cachix), enhance direnv config in home, create test, register in flake, validate. Verified: devenv 2.0.6 in nixpkgs, cachix key confirmed via web search, HM options confirmed via MCP."
+**Context**: CONSTRUCTION - Code Generation Part 1 (Planning). Awaiting user approval before Part 2.
+
+---
+
+## Devenv + Direnv Integration — Code Generation Part 1 Approved
+**Timestamp**: 2026-06-19T00:08:00Z
+**User Input**: "Continue"
+**AI Response**: "Code generation plan approved. Proceeding to Part 2 (Generation)."
+**Context**: CONSTRUCTION - Code Generation Part 1 approved. Starting Part 2 (Generation).
+
+---
+
+## Devenv + Direnv Integration — Code Generation Part 2 Complete
+**Timestamp**: 2026-06-19T00:09:00Z
+**AI Response**: "Code generation completed successfully. Modified 3 files (modules/common/default.nix, home/default.nix, flake.nix), created 1 file (tests/devenv-direnv-test.nix). Added devenv to systemPackages, cachix substituter+key to nix.settings, direnv.config with warn_timeout and hide_env_diff, direnv.silent=true. nix flake check --no-build passes with zero errors."
+**Context**: CONSTRUCTION - Code Generation Part 2 complete. All 5 plan steps [x]. nix flake check passes clean.
+
+---
+
+## Devenv + Direnv Integration — Code Generation Approved
+**Timestamp**: 2026-06-19T00:10:00Z
+**User Input**: "Continue"
+**AI Response**: "Code generation approved. Proceeding to Build and Test stage."
+**Context**: CONSTRUCTION - Code Generation approved. Moving to Build and Test.
+
+---
+
+## Devenv + Direnv Integration — Build and Test Complete
+**Timestamp**: 2026-06-19T00:11:00Z
+**Build Status**: Success (nix flake check --no-build → zero errors)
+**Test Status**: Pass (devenv-direnv-test.nix evalua, 6 assertions cobertos)
+**Files Generated**:
+- aidlc-docs/construction/build-and-test/build-instructions.md
+- aidlc-docs/construction/build-and-test/unit-test-instructions.md
+- aidlc-docs/construction/build-and-test/integration-test-instructions.md
+- aidlc-docs/construction/build-and-test/build-and-test-summary.md
+**Context**: CONSTRUCTION - Build and Test complete. All stages finished for Devenv + Direnv Integration.
+
+---
+
+## Devenv + Direnv Integration — Build and Test Approved
+**Timestamp**: 2026-06-19T00:12:00Z
+**User Input**: "Continue"
+**AI Response**: "Build and Test approved. AI-DLC workflow complete for Devenv + Direnv Integration. Operations phase is a placeholder — no deployment automation configured."
+**Context**: CONSTRUCTION - Build and Test approved. All AI-DLC stages complete for this feature.
+
+---
