@@ -70,6 +70,10 @@
     description = "Carlos Fagiani Junior";
     extraGroups = [ "wheel" "video" "audio" "docker" ];
     shell = pkgs.fish;
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFspHZN+DSFXVI3KD7hN5rbbu0GQizG5/EJkcGAD+it/ fagianijunior@gmail.com - Nobita"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA2laT3PwGK1fGwZKTjx1exNELxkr3WVk0Dq4HpIr3Py terabytes@doraemon"
+    ];
   };
 
   # Security: require password for sudo
