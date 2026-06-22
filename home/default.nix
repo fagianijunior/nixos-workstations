@@ -546,6 +546,7 @@ in
       hl.exec_cmd("[workspace 1] " .. browser)
       hl.exec_cmd("[workspace 3] clickup")
       hl.exec_cmd("[workspace 3] Telegram")
+      hl.exec_cmd("[workspace 3] karere")
       hl.exec_cmd("[workspace 3] slack")
     end)
 
@@ -1047,6 +1048,7 @@ in
     swappy
     gimp
     telegram-desktop
+    karere
     slack
     clickup
     pavucontrol

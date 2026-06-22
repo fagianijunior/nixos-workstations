@@ -123,7 +123,6 @@
       php84Packages.php-cs-fixer
       black
       shfmt
-      terraform
     ];
 
     # Inline all Lua configuration via builtins.readFile
