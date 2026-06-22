@@ -60,6 +60,10 @@
     };
   };
 
+  # Fix: wait-online should succeed when any interface is online
+  # Prevents boot failure when Docker bridges or wireless aren't ready yet
+  systemd.network.wait-online.anyInterface = true;
+
   # tailscale
   services.tailscale.enable = true;
 

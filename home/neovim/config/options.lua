@@ -53,3 +53,7 @@ opt.wildmode = "longest:full,full"
 opt.wildoptions = "pum"
 opt.pumheight = 10
 opt.pumblend = 10
+
+-- Spell checking
+opt.spell = true
+opt.spelllang = "pt_br"
