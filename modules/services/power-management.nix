@@ -41,4 +41,11 @@
   # Hibernation support
   # boot.resumeDevice must be set in host hardware-configuration.nix
   # For dedicated swap partitions, no resume_offset is needed.
+
+  # Fix: PSP resume falha no ACPI S4 platform path (AMD Rembrandt/Yellow Carp).
+  # HibernateMode=shutdown faz cold boot e restaura imagem do disco,
+  # evitando o ACPI platform resume que causa "PSP resume failed (-22)".
+  systemd.sleep.settings.Sleep = {
+    HibernateMode = "shutdown";
+  };
 }

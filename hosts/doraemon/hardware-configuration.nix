@@ -26,12 +26,12 @@
     "video=eDP-1:1920x1200@60"
   ];
 
-  # Hibernação: forçar imagem mínima para evitar "Not enough free memory" (Error -12)
-  # Com image_size=0, o kernel descarta todo o cache descartável antes de criar o snapshot,
-  # maximizando páginas disponíveis para a imagem.
-  # systemd.tmpfiles.rules = [
-  #   "w /sys/power/image_size - - - - 0"
-  # ];
+  # Fix: PSP resume failed (-22) ao voltar de hibernação
+  # Serializa device resume para eliminar race conditions entre amdgpu e outros dispositivos.
+  # Ref: https://community.frame.work/t/hibernate-resume-failures-on-framework-13-amd-ryzen-ai-300-krackan-a-b-tested-workaround-pm-async-0/83040
+  systemd.tmpfiles.rules = [
+    "w /sys/power/pm_async - - - - 0"
+  ];
 
   # LUKS encryption
   boot.initrd.luks.devices."cryptroot" = {
@@ -72,14 +72,19 @@
     options = [ "fmask=0022" "dmask=0022" ];
   };
 
-  # Swap with hibernation support
+  # Encrypted swap (LUKS) with hibernation support
+  # TODO: Em reinstalação futura, considerar:
+  #   - Swap como subvolume/swapfile dentro do cryptroot (elimina partição e LUKS separados)
+  #   - Ou swap como LV dentro de um LVM-on-LUKS (mais flexível para resize)
+  # Ambas opções eliminam a necessidade de keyfile separado no initrd.
+  boot.initrd.luks.devices."cryptswap" = {
+    device = "/dev/disk/by-uuid/c8c83c67-1aa8-4875-9bcc-1e10e7de1e7d";
+    allowDiscards = true;
+  };
   swapDevices = [
-    {
-      device = "/dev/disk/by-uuid/4301fbe5-a9db-4c24-a4b3-24a18495d6da";
-      options = [ "discard" ];
-    }
+    { device = "/dev/mapper/cryptswap"; }
   ];
-  boot.resumeDevice = "/dev/disk/by-uuid/4301fbe5-a9db-4c24-a4b3-24a18495d6da";
+  boot.resumeDevice = "/dev/mapper/cryptswap";
 
   # Hardware platform
   # Lenovo IdeaPad Slim 3 15ARP10, AMD Ryzen 7 7735HS, Rembrandt RADEON 680M
