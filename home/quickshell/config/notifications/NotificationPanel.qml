@@ -70,12 +70,15 @@ ColumnLayout {
         Button {
             id: refreshButton
             text: "↻"
+            implicitWidth: 24
+            implicitHeight: 24
             onClicked: {
                 notificationProcess.running = true
             }
             background: Rectangle {
                 color: parent.pressed ? "#585b70" : "#313244"
                 border.color: "#6c7086"
+                border.width: 1
                 radius: 5
             }
             contentItem: Text {

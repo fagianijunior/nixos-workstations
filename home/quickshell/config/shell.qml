@@ -8,7 +8,7 @@ import "./calendar"
 import "./notifications"
 import "./battery"
 import "./taskwarrior"
-import "./inhibit"
+
 
 PanelWindow {
     id: rootPanel
@@ -66,22 +66,31 @@ PanelWindow {
 
         Button {
             id: inhibitButton
-            text: sleepInhibitPopup.inhibitActive ? "☕" : "💤"
+            text: inhibitActive ? "☕" : "💤"
+            property bool inhibitActive: false
+            implicitWidth: 24
+            implicitHeight: 24
+
             onClicked: {
-                sleepInhibitPopup.visible = !sleepInhibitPopup.visible
+                if (inhibitActive) {
+                    cancelInhibitProcess.running = true
+                } else {
+                    // Inibe sleep indefinidamente (999h ~ 41 dias)
+                    inhibitProcess.command = ["systemd-inhibit", "--what=sleep", "sleep", "3596400"]
+                    inhibitProcess.running = true
+                    inhibitActive = true
+                }
             }
             contentItem: Text {
                 text: inhibitButton.text
                 color: "#cad3f5"
-                font.pixelSize: 14
+                font.pixelSize: 16
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }
             background: Rectangle {
-                color: sleepInhibitPopup.inhibitActive
-                    ? (parent.pressed ? "#585b70" : "#45475a")
-                    : (parent.pressed ? "#585b70" : "#313244")
-                border.color: sleepInhibitPopup.inhibitActive ? "#a6e3a1" : "#6c7086"
+                color: parent.pressed ? "#585b70" : "#313244"
+                border.color: inhibitButton.inhibitActive ? "#a6e3a1" : "#6c7086"
                 border.width: 1
                 radius: 5
             }
@@ -90,6 +99,8 @@ PanelWindow {
         Button {
             id: pauseButton
             text: rootPanel.sensitiveData ? "⊙" : "⊘"
+            implicitWidth: 24
+            implicitHeight: 24
             onClicked: {
                 dunstPauseToggleProcess.running = true
             }
@@ -101,7 +112,7 @@ PanelWindow {
                 verticalAlignment: Text.AlignVCenter
             }
             background: Rectangle {
-                color: parent.pressed ? "#585b70" : "#313244"
+                color: parent.pressed ? "#585b70" : "#312444"
                 border.color: "#6c7086"
                 border.width: 1
                 radius: 5
@@ -109,9 +120,38 @@ PanelWindow {
         }
     }
 
-    SleepInhibitPopup {
-        id: sleepInhibitPopup
-        anchorWindow: rootPanel
+    Process {
+        id: inhibitProcess
+        // command setado dinamicamente antes de rodar
+        stdout: StdioCollector {
+            onStreamFinished: {
+                // sleep terminou (improvável, mas trata)
+                inhibitButton.inhibitActive = false
+            }
+        }
+        stderr: StdioCollector {
+            onStreamFinished: {
+                if (this.text.trim() !== "") {
+                    console.error("Inhibit error:", this.text.trim())
+                }
+                inhibitButton.inhibitActive = false
+            }
+        }
+    }
+
+    Process {
+        id: cancelInhibitProcess
+        command: ["fish", "-c", "kill $(pgrep -f 'systemd-inhibit --what=sleep') 2>/dev/null; true"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                inhibitButton.inhibitActive = false
+            }
+        }
+        stderr: StdioCollector {
+            onStreamFinished: {
+                inhibitButton.inhibitActive = false
+            }
+        }
     }
 
     ColumnLayout {

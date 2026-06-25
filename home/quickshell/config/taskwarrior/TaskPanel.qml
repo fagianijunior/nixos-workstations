@@ -155,12 +155,14 @@ Rectangle {
             Button {
                 id: refreshButton
                 text: "↻"
+                implicitWidth: 24
+                implicitHeight: 24
                 onClicked: {
                     // Connected to TaskManager.refreshTasks() (Task 8.2)
                     taskManager.refreshTasks()
                 }
                 contentItem: Text {
-                    text: refreshEventsButton.text
+                    text: refreshButton.text
                     color: "#cad3f5"
                     font.pixelSize: 16
                     horizontalAlignment: Text.AlignHCenter
@@ -170,6 +172,7 @@ Rectangle {
                 background: Rectangle {
                     color: parent.pressed ? "#585b70" : "#313244" // Surface1 : Surface0
                     border.color: "#6c7086" // Surface2
+                    border.width: 1
                     radius: 5
                 }
             }

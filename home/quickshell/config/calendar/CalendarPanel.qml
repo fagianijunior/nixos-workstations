@@ -25,6 +25,8 @@ ColumnLayout {
         Button {
             id: refreshEventsButton
             text: "↻"
+            implicitWidth: 24
+            implicitHeight: 24
             onClicked: {
                 calendarProcess.running = true
             }

@@ -109,6 +109,7 @@
     zip
     jq
     docker-compose
+    lm_sensors
   ];
 
   # Docker
