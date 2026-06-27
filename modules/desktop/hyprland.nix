@@ -41,6 +41,7 @@
     wl-clipboard       # Clipboard manager for Wayland
     grim               # Screenshot utility
     slurp              # Region selector
+    wl-screenrec       # Screen recorder (VA-API hardware encoding)
     wlsunset           # Blue light filter
     brightnessctl      # Backlight control
     pamixer            # PulseAudio/PipeWire CLI mixer

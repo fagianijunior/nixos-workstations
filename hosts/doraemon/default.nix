@@ -10,6 +10,7 @@
     ../../modules/services/pipewire.nix
     ../../modules/services/networking.nix
     ../../modules/services/ssh.nix
+    ../../modules/services/foldingathome.nix
     ../../modules/services/gaming.nix
     ../../modules/desktop/hyprland.nix
     ../../modules/desktop/catppuccin.nix

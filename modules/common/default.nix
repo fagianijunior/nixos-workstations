@@ -91,6 +91,7 @@
   # Base system packages
   environment.systemPackages = with pkgs; [
     git
+    git-remote-codecommit
     vim-full
     wl-clipboard
     curl
@@ -110,6 +111,7 @@
     jq
     docker-compose
     lm_sensors
+    terraform-mcp-server
   ];
 
   # Docker

@@ -254,6 +254,7 @@ hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({action = "toggle"}))
 hl.bind(mainMod .. " + D", hl.dsp.window.fullscreen({mode = "maximized", action = "toggle"}))
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("grim -g \"$(slurp)\" - | swappy -f -"))
+hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("pkill -SIGINT wl-screenrec || wl-screenrec --audio -f ~/Videos/recording-$(date +%Y%m%d-%H%M%S).mp4"))
 hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.float({action = "toggle"}))
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
 
