@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 -- Hyprland Lua configuration for terabytes
 -- Edit this file directly, then reload with: hyprctl reload
 -- https://wiki.hypr.land/Configuring/Start/

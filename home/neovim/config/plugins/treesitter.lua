@@ -78,8 +78,17 @@ treesitter.setup({
 
 -- Folding via treesitter (disabled by default)
 vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.opt.foldenable = false
+
+-- Disable folding in special buffers (neo-tree, help, etc.)
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "neo-tree", "help", "toggleterm", "qf" },
+  callback = function()
+    vim.opt_local.foldmethod = "manual"
+    vim.opt_local.foldexpr = ""
+  end,
+})
 
 -- Associate .tfvars with terraform filetype
 vim.filetype.add({

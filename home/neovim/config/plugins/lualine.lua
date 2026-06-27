@@ -5,7 +5,7 @@ if not ok then return end
 
 lualine.setup({
   options = {
-    theme = "catppuccin",
+    theme = "auto",
     component_separators = { left = "", right = "" },
     section_separators = { left = "", right = "" },
     globalstatus = true,

@@ -70,9 +70,12 @@
       # Git integration
       gitsigns-nvim
 
+      # Icons
+      mini-icons
+      nvim-web-devicons
+
       # File explorer
       neo-tree-nvim
-      nvim-web-devicons
       nui-nvim
 
       # Keybinding discovery
@@ -104,6 +107,9 @@
       # Telescope dependencies
       ripgrep
       fd
+
+      # Treesitter CLI (needed by nvim-treesitter for parser compilation)
+      tree-sitter
 
       # Language servers
       nixd
@@ -137,9 +143,8 @@
       ${builtins.readFile ./config/plugins/lsp.lua}
       ${builtins.readFile ./config/plugins/luasnip.lua}
       ${builtins.readFile ./config/plugins/cmp.lua}
-      ${builtins.readFile ./config/plugins/treesitter.lua}
-      ${builtins.readFile ./config/plugins/gitsigns.lua}
       ${builtins.readFile ./config/plugins/neo-tree.lua}
+      ${builtins.readFile ./config/plugins/gitsigns.lua}
       ${builtins.readFile ./config/plugins/which-key.lua}
       ${builtins.readFile ./config/plugins/lualine.lua}
       ${builtins.readFile ./config/plugins/conform.lua}
@@ -148,6 +153,7 @@
       ${builtins.readFile ./config/plugins/autopairs.lua}
       ${builtins.readFile ./config/plugins/comment.lua}
       ${builtins.readFile ./config/plugins/bufferline.lua}
+      ${builtins.readFile ./config/plugins/treesitter.lua}
     '';
   };
 }

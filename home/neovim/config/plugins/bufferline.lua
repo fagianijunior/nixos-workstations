@@ -26,5 +26,4 @@ bufferline.setup({
     show_close_icon = false,
     separator_style = "thin",
   },
-  highlights = require("catppuccin.groups.integrations.bufferline").get(),
 })

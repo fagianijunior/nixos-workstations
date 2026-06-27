@@ -1,7 +1,4 @@
--- LSP Configuration
-
-local ok, lspconfig = pcall(require, "lspconfig")
-if not ok then return end
+-- LSP Configuration (vim.lsp.config API — Neovim 0.11+)
 
 -- Diagnostic configuration
 vim.diagnostic.config({
@@ -25,27 +22,30 @@ for type, icon in pairs(signs) do
   vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
 end
 
--- LSP on_attach: keybindings applied when a server attaches to a buffer
-local on_attach = function(_, bufnr)
-  local opts = { buffer = bufnr, noremap = true, silent = true }
+-- LSP keybindings applied when a server attaches to a buffer
+vim.api.nvim_create_autocmd("LspAttach", {
+  group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true }),
+  callback = function(ev)
+    local opts = { buffer = ev.buf, noremap = true, silent = true }
 
-  vim.keymap.set("n", "gd", vim.lsp.buf.definition, vim.tbl_extend("force", opts, { desc = "Go to definition" }))
-  vim.keymap.set("n", "gD", vim.lsp.buf.declaration, vim.tbl_extend("force", opts, { desc = "Go to declaration" }))
-  vim.keymap.set("n", "gr", vim.lsp.buf.references, vim.tbl_extend("force", opts, { desc = "Go to references" }))
-  vim.keymap.set("n", "gi", vim.lsp.buf.implementation, vim.tbl_extend("force", opts, { desc = "Go to implementation" }))
-  vim.keymap.set("n", "K", vim.lsp.buf.hover, vim.tbl_extend("force", opts, { desc = "Hover documentation" }))
-  vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, vim.tbl_extend("force", opts, { desc = "Rename symbol" }))
-  vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "Code action" }))
-  vim.keymap.set("n", "<leader>D", vim.lsp.buf.type_definition, vim.tbl_extend("force", opts, { desc = "Type definition" }))
-  vim.keymap.set("n", "<leader>ds", vim.lsp.buf.document_symbol, vim.tbl_extend("force", opts, { desc = "Document symbols" }))
-  vim.keymap.set("n", "<leader>ws", vim.lsp.buf.workspace_symbol, vim.tbl_extend("force", opts, { desc = "Workspace symbols" }))
+    vim.keymap.set("n", "gd", vim.lsp.buf.definition, vim.tbl_extend("force", opts, { desc = "Go to definition" }))
+    vim.keymap.set("n", "gD", vim.lsp.buf.declaration, vim.tbl_extend("force", opts, { desc = "Go to declaration" }))
+    vim.keymap.set("n", "gr", vim.lsp.buf.references, vim.tbl_extend("force", opts, { desc = "Go to references" }))
+    vim.keymap.set("n", "gi", vim.lsp.buf.implementation, vim.tbl_extend("force", opts, { desc = "Go to implementation" }))
+    vim.keymap.set("n", "K", vim.lsp.buf.hover, vim.tbl_extend("force", opts, { desc = "Hover documentation" }))
+    vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, vim.tbl_extend("force", opts, { desc = "Rename symbol" }))
+    vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "Code action" }))
+    vim.keymap.set("n", "<leader>D", vim.lsp.buf.type_definition, vim.tbl_extend("force", opts, { desc = "Type definition" }))
+    vim.keymap.set("n", "<leader>ds", vim.lsp.buf.document_symbol, vim.tbl_extend("force", opts, { desc = "Document symbols" }))
+    vim.keymap.set("n", "<leader>ws", vim.lsp.buf.workspace_symbol, vim.tbl_extend("force", opts, { desc = "Workspace symbols" }))
 
-  -- Diagnostics
-  vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, vim.tbl_extend("force", opts, { desc = "Previous diagnostic" }))
-  vim.keymap.set("n", "]d", vim.diagnostic.goto_next, vim.tbl_extend("force", opts, { desc = "Next diagnostic" }))
-  vim.keymap.set("n", "<leader>de", vim.diagnostic.open_float, vim.tbl_extend("force", opts, { desc = "Show diagnostic" }))
-  vim.keymap.set("n", "<leader>dl", vim.diagnostic.setloclist, vim.tbl_extend("force", opts, { desc = "Diagnostic list" }))
-end
+    -- Diagnostics
+    vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, vim.tbl_extend("force", opts, { desc = "Previous diagnostic" }))
+    vim.keymap.set("n", "]d", vim.diagnostic.goto_next, vim.tbl_extend("force", opts, { desc = "Next diagnostic" }))
+    vim.keymap.set("n", "<leader>de", vim.diagnostic.open_float, vim.tbl_extend("force", opts, { desc = "Show diagnostic" }))
+    vim.keymap.set("n", "<leader>dl", vim.diagnostic.setloclist, vim.tbl_extend("force", opts, { desc = "Diagnostic list" }))
+  end,
+})
 
 -- Capabilities: integrate with nvim-cmp for enhanced completion
 local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -54,9 +54,9 @@ if has_cmp then
   capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
 end
 
--- Lua Language Server
-lspconfig.lua_ls.setup({
-  on_attach = on_attach,
+-- Server configurations using vim.lsp.config (nvim 0.11+)
+
+vim.lsp.config("lua_ls", {
   capabilities = capabilities,
   settings = {
     Lua = {
@@ -71,9 +71,7 @@ lspconfig.lua_ls.setup({
   },
 })
 
--- Nix Language Server (nixd)
-lspconfig.nixd.setup({
-  on_attach = on_attach,
+vim.lsp.config("nixd", {
   capabilities = capabilities,
   settings = {
     nixd = {
@@ -82,16 +80,12 @@ lspconfig.nixd.setup({
   },
 })
 
--- Terraform Language Server
-lspconfig.terraformls.setup({
-  on_attach = on_attach,
+vim.lsp.config("terraformls", {
   capabilities = capabilities,
   filetypes = { "terraform", "terraform-vars", "hcl" },
 })
 
--- Ruby Language Server (Solargraph)
-lspconfig.solargraph.setup({
-  on_attach = on_attach,
+vim.lsp.config("solargraph", {
   capabilities = capabilities,
   settings = {
     solargraph = {
@@ -101,15 +95,11 @@ lspconfig.solargraph.setup({
   },
 })
 
--- PHP Language Server (Intelephense)
-lspconfig.intelephense.setup({
-  on_attach = on_attach,
+vim.lsp.config("intelephense", {
   capabilities = capabilities,
 })
 
--- Python Language Server (Pyright)
-lspconfig.pyright.setup({
-  on_attach = on_attach,
+vim.lsp.config("pyright", {
   capabilities = capabilities,
   settings = {
     python = {
@@ -122,15 +112,23 @@ lspconfig.pyright.setup({
   },
 })
 
--- Bash Language Server
-lspconfig.bashls.setup({
-  on_attach = on_attach,
+vim.lsp.config("bashls", {
   capabilities = capabilities,
   filetypes = { "sh", "bash", "zsh" },
 })
 
--- Dockerfile Language Server
-lspconfig.dockerls.setup({
-  on_attach = on_attach,
+vim.lsp.config("dockerls", {
   capabilities = capabilities,
+})
+
+-- Enable all configured servers
+vim.lsp.enable({
+  "lua_ls",
+  "nixd",
+  "terraformls",
+  "solargraph",
+  "intelephense",
+  "pyright",
+  "bashls",
+  "dockerls",
 })

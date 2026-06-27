@@ -5,14 +5,17 @@ if not ok then return end
 
 neo_tree.setup({
   close_if_last_window = true,
+  enable_git_status = true,
+  enable_normal_mode_for_inputs = false,
+  enable_diagnostics = true,
   popup_border_style = "rounded",
   filesystem = {
     follow_current_file = { enabled = true },
     use_libuv_file_watcher = true,
     filtered_items = {
-      visible = false,
+      visible = true,
       hide_dotfiles = false,
-      hide_gitignored = true,
+      hide_gitignored = false,
       hide_by_name = { ".git", "node_modules", ".cache" },
     },
   },
