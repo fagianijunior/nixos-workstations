@@ -74,7 +74,7 @@ ColumnLayout {
     Process {
         id: gpuTempProcess
         command: ["fish", "-c", "
-            set HWMON_PATH /sys/class/drm/card1/device/hwmon/hwmon4
+            set HWMON_PATH /sys/class/drm/card1/device/hwmon/hwmon2
 
             if test -f \"$HWMON_PATH/temp1_input\"
                 set TEMP (cat \"$HWMON_PATH/temp1_input\")
