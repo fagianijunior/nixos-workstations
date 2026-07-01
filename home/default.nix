@@ -398,9 +398,11 @@ in
       finders = {
         desktop_icons = true;
         math_prefix = "=";
+        desktop_terminal = "wezterm -e";
       };
       general = {
         grab_focus = true;
+        show_apps_on_open = 1;
       };
       ui = {
         window_size = "400 260";
