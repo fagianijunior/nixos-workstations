@@ -248,7 +248,7 @@ hl.config({
 local mainMod = "SUPER"
 
 hl.bind(mainMod .. " + CTRL + V", hl.dsp.exec_cmd("pypr toggle volume"))
-hl.bind(mainMod .. " + CTRL + RETURN", hl.dsp.exec_cmd("pypr toggle term"))
+hl.bind(mainMod .. " + CTRL + SPACE", hl.dsp.exec_cmd("pypr toggle term"))
 hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd("pypr zoom"))
 hl.bind(mainMod .. " + ESCAPE", hl.dsp.exec_cmd("pkill -x wlogout || wlogout"))
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({action = "toggle"}))
@@ -323,7 +323,7 @@ hl.window_rule({
 
 hl.window_rule({
     name  = "pypr-volume-scratchpad",
-    match = { class = "org.pulseaudio.pavucontrol" },
+    match = { class = "wezterm_wiremix" },
     float = true,
     size  = "40% 70%",
 })

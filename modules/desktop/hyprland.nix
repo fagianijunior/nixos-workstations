@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ pkgs, ... }:
 
 {
   # Hyprland Wayland compositor
@@ -32,7 +32,7 @@
     XDG_SESSION_DESKTOP = "Hyprland";
     QT_QPA_PLATFORM = "wayland";
     QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
-    GDK_BACKEND = "wayland,x11";
+    GDK_BACKEND = "wayland";
     MOZ_ENABLE_WAYLAND = "1";
   };
 
@@ -44,10 +44,9 @@
     wl-screenrec       # Screen recorder (VA-API hardware encoding)
     wlsunset           # Blue light filter
     brightnessctl      # Backlight control
-    pamixer            # PulseAudio/PipeWire CLI mixer
+    pamixer              # PulseAudio/PipeWire CLI mixer
     playerctl          # Media player control
     libnotify          # Notification library
-    kitty
   ];
 
   # Enable polkit for privilege escalation

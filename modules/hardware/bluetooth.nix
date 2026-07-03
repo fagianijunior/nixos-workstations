@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ pkgs, ... }:
 
 {
   # Bluetooth via bluez - managed with bluetoothctl (no GUI/applet)
