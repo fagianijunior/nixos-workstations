@@ -92,168 +92,167 @@ ColumnLayout {
     }
 
     // LISTA DE NOTIFICAÇÕES
-    ScrollView {
+    ListView {
+        visible: !root.sensitiveData
+        id: notificationList
         Layout.fillWidth: true
-        Layout.fillHeight: true
+        Layout.preferredHeight: contentHeight > 0 ? contentHeight : 50
+        interactive: false
 
-        ListView {
-            visible: !root.sensitiveData
-            id: notificationList
-            model: ListModel {
-                id: notificationModel
+        model: ListModel {
+            id: notificationModel
+        }
+
+        delegate: Rectangle {
+            width: notificationList.width
+            height: Math.max(80, notificationContent.implicitHeight + 20)
+            color: Qt.rgba(0.2, 0.2, 0.2, 0.7)
+            border.color: borderColorManager.getColorForApp(model.appname)
+            border.width: 2
+            radius: 8
+            clip: true
+
+            MouseArea {
+                id: notificationClickArea
+                anchors.fill: parent
+                anchors.rightMargin: closeButton.width + 10
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+
+                onClicked: {
+                    console.log("Notification clicked for app:", model.appname)
+                    clickRedirectHandler.handleNotificationClick(model.appname, model.id)
+                }
+
+                onEntered: {
+                    parent.color = Qt.rgba(0.25, 0.25, 0.35, 0.8)
+                }
+
+                onExited: {
+                    parent.color = Qt.rgba(0.2, 0.2, 0.2, 0.7)
+                }
             }
 
-            delegate: Rectangle {
-                width: notificationList.width
-                height: Math.max(80, notificationContent.implicitHeight + 20)
-                color: Qt.rgba(0.2, 0.2, 0.2, 0.7)
-                border.color: borderColorManager.getColorForApp(model.appname)
-                border.width: 2
-                radius: 8
+            Button {
+                id: closeButton
+                text: "X"
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.margins: 5
+                width: 24
+                height: 24
+                font.pixelSize: 12
+                onClicked: {
+                    closeNotificationProcess.command = ["dunstctl", "close", model.id]
+                    closeNotificationProcess.running = true
+
+                    removeNotificationProcess.command = ["dunstctl", "history-rm", model.id]
+                    removeNotificationProcess.running = true
+
+                    notificationModel.remove(index)
+                }
+                background: Rectangle {
+                    color: "transparent"
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: parent.pressed ? "#f38ba8" : "#b8c0e0"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+
+            ColumnLayout {
+                id: notificationContent
+                anchors.left: parent.left
+                anchors.right: closeButton.left
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.margins: 5
+                spacing: 5
                 clip: true
 
-                MouseArea {
-                    id: notificationClickArea
-                    anchors.fill: parent
-                    anchors.rightMargin: closeButton.width + 10
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-
-                    onClicked: {
-                        console.log("Notification clicked for app:", model.appname)
-                        clickRedirectHandler.handleNotificationClick(model.appname, model.id)
-                    }
-
-                    onEntered: {
-                        parent.color = Qt.rgba(0.25, 0.25, 0.35, 0.8)
-                    }
-
-                    onExited: {
-                        parent.color = Qt.rgba(0.2, 0.2, 0.2, 0.7)
-                    }
-                }
-
-                Button {
-                    id: closeButton
-                    text: "X"
-                    anchors.top: parent.top
-                    anchors.right: parent.right
-                    anchors.margins: 5
-                    width: 24
-                    height: 24
-                    font.pixelSize: 12
-                    onClicked: {
-                        closeNotificationProcess.command = ["dunstctl", "close", model.id]
-                        closeNotificationProcess.running = true
-
-                        removeNotificationProcess.command = ["dunstctl", "history-rm", model.id]
-                        removeNotificationProcess.running = true
-
-                        notificationModel.remove(index)
-                    }
-                    background: Rectangle {
-                        color: "transparent"
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: parent.pressed ? "#f38ba8" : "#b8c0e0"
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                }
-
-                ColumnLayout {
-                    id: notificationContent
-                    anchors.left: parent.left
-                    anchors.right: closeButton.left
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    anchors.margins: 5
+                // CABEÇALHO (App + Tempo)
+                RowLayout {
+                    Layout.fillWidth: true
                     spacing: 5
-                    clip: true
 
-                    // CABEÇALHO (App + Tempo)
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 5
-
-                        Text {
-                            id: summaryText
-                            text: model.summary || "Sem título"
-                            font.pixelSize: Math.max(11, Math.min(13, root.panelWidth * 0.048))
-                            font.bold: true
-                            color: root.getUrgencyColor(model.urgency)
-                            wrapMode: Text.WordWrap
-                            elide: Text.ElideRight
-                            maximumLineCount: 2
-                            Layout.fillWidth: true
-
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                visible: summaryText.truncated
-
-                                property var tooltip: styledToolTip.createObject(this, { text: model.summary })
-
-                                onEntered: tooltip.open()
-                                onExited: tooltip.close()
-                            }
-                        }
-
-                        Column {
-                            Layout.alignment: Qt.AlignTop | Qt.AlignRight
-                            Layout.preferredWidth: 60
-                            spacing: 2
-
-                            Text {
-                                text: root.formatTimestamp(model.timestamp)
-                                font.pixelSize: Math.max(7, Math.min(9, root.panelWidth * 0.033))
-                                color: "#a6adc8"
-                                elide: Text.ElideRight
-                                width: parent.width
-                                horizontalAlignment: Text.AlignRight
-                            }
-
-                            Text {
-                                text: model.appname || "App"
-                                font.pixelSize: Math.max(7, Math.min(9, root.panelWidth * 0.033))
-                                font.bold: true
-                                color: "#b8c0e0"
-                                elide: Text.ElideRight
-                                width: parent.width
-                                horizontalAlignment: Text.AlignRight
-                            }
-                        }
-                    }
-
-                    // CORPO DA NOTIFICAÇÃO
                     Text {
-                        id: bodyText
-                        text: model.body || ""
-                        font.pixelSize: Math.max(9, Math.min(11, root.panelWidth * 0.041))
-                        color: "#cad3f5"
+                        id: summaryText
+                        text: model.summary || "Sem título"
+                        font.pixelSize: Math.max(11, Math.min(13, root.panelWidth * 0.048))
+                        font.bold: true
+                        color: root.getUrgencyColor(model.urgency)
                         wrapMode: Text.WordWrap
                         elide: Text.ElideRight
-                        maximumLineCount: 4
+                        maximumLineCount: 2
                         Layout.fillWidth: true
-                        Layout.maximumWidth: parent.width
-                        visible: text !== ""
 
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
-                            visible: bodyText.truncated
+                            visible: summaryText.truncated
 
-                            property var tooltip: styledToolTip.createObject(this, { text: model.body })
+                            property var tooltip: styledToolTip.createObject(this, { text: model.summary })
 
                             onEntered: tooltip.open()
                             onExited: tooltip.close()
                         }
                     }
+
+                    Column {
+                        Layout.alignment: Qt.AlignTop | Qt.AlignRight
+                        Layout.preferredWidth: 60
+                        spacing: 2
+
+                        Text {
+                            text: root.formatTimestamp(model.timestamp)
+                            font.pixelSize: Math.max(7, Math.min(9, root.panelWidth * 0.033))
+                            color: "#a6adc8"
+                            elide: Text.ElideRight
+                            width: parent.width
+                            horizontalAlignment: Text.AlignRight
+                        }
+
+                        Text {
+                            text: model.appname || "App"
+                            font.pixelSize: Math.max(7, Math.min(9, root.panelWidth * 0.033))
+                            font.bold: true
+                            color: "#b8c0e0"
+                            elide: Text.ElideRight
+                            width: parent.width
+                            horizontalAlignment: Text.AlignRight
+                        }
+                    }
+                }
+
+                // CORPO DA NOTIFICAÇÃO
+                Text {
+                    id: bodyText
+                    text: model.body || ""
+                    font.pixelSize: Math.max(9, Math.min(11, root.panelWidth * 0.041))
+                    color: "#cad3f5"
+                    wrapMode: Text.WordWrap
+                    elide: Text.ElideRight
+                    maximumLineCount: 4
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: parent.width
+                    visible: text !== ""
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        visible: bodyText.truncated
+
+                        property var tooltip: styledToolTip.createObject(this, { text: model.body })
+
+                        onEntered: tooltip.open()
+                        onExited: tooltip.close()
+                    }
                 }
             }
-            spacing: 10
         }
+        spacing: 10
     }
 
     // STATUS

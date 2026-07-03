@@ -16,5 +16,6 @@
   # Bluetooth CLI tools only
   environment.systemPackages = with pkgs; [
     bluez
+    bluetui
   ];
 }

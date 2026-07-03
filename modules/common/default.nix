@@ -28,6 +28,9 @@
   # Allow unfree packages (Steam, etc.) — set in modules/services/gaming.nix
   # nixpkgs.config is intentionally NOT set here to avoid conflicts with test framework
 
+  # Kernel - Zen (optimized for desktop responsiveness and low latency)
+  boot.kernelPackages = pkgs.linuxPackages_zen;
+
   # Bootloader - systemd-boot (UEFI)
   boot.loader = {
     systemd-boot = {

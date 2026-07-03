@@ -681,8 +681,8 @@ in
     hl.config({
         misc = {
             force_default_wallpaper = 0,
-            disable_splash_rendering = true,
-            disable_hyprland_logo   = true,
+            disable_splash_rendering = false,
+            disable_hyprland_logo   = false,
             background_color = "0x1e1e2e"
         },
     })

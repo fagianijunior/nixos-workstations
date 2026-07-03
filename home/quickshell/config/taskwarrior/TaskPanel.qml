@@ -9,6 +9,7 @@ Rectangle {
     // Visual properties - Catppuccin Macchiato colors with transparency (matching shell style)
     color: Qt.rgba(36/255, 39/255, 58/255, 0.7)  // Base with transparency
     radius: 8
+    implicitHeight: innerLayout.implicitHeight
     
     // Property to expose TaskManager to delegates
     property alias taskManagerRef: taskManager
@@ -57,6 +58,7 @@ Rectangle {
     
     // Layout
     ColumnLayout {
+        id: innerLayout
         anchors.fill: parent
         anchors.margins: 0  // Reduced from 16
         spacing: 2  // Reduced from 12
@@ -179,39 +181,33 @@ Rectangle {
         }
         
         // Task cards list
-        ScrollView {
+        ListView {
+            id: taskListView
             Layout.fillWidth: true
-            Layout.fillHeight: true
-            clip: true
+            Layout.preferredHeight: contentHeight > 0 ? contentHeight : 50
+            interactive: false
+            spacing: 5
+            bottomMargin: 8  // Add padding at the bottom
             
-            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+            // Placeholder model - will be populated from TaskManager in Task 8.2
+            model: ListModel {
+                id: taskCardModel
+            }
             
-            ListView {
-                id: taskListView
-                spacing: 5
-                bottomMargin: 8  // Add padding at the bottom
+            // Delegate will use TaskCard component
+            delegate: TaskCard {
+                id: cardDelegate
+                width: taskListView.width
+                clientName: model.clientName
+                tasks: model.tasks
+                taskManager: taskPanel.taskManagerRef  // Pass TaskManager reference via property alias
                 
-                // Placeholder model - will be populated from TaskManager in Task 8.2
-                model: ListModel {
-                    id: taskCardModel
-                }
-                
-                // Delegate will use TaskCard component
-                delegate: TaskCard {
-                    id: cardDelegate
-                    width: taskListView.width
-                    clientName: model.clientName
-                    tasks: model.tasks
-                    taskManager: taskPanel.taskManagerRef  // Pass TaskManager reference via property alias
-                    
-                    // Handle expansion - collapse other cards (Task 8.5)
-                    onExpansionChanged: function(expanded) {
-                        if (expanded) {
-                            console.log("Card expanded:", clientName)
-                            // Collapse all other cards (single-focus behavior)
-                            collapseOtherCards(cardDelegate)
-                        }
+                // Handle expansion - collapse other cards (Task 8.5)
+                onExpansionChanged: function(expanded) {
+                    if (expanded) {
+                        console.log("Card expanded:", clientName)
+                        // Collapse all other cards (single-focus behavior)
+                        collapseOtherCards(cardDelegate)
                     }
                 }
             }

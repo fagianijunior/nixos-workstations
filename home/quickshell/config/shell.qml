@@ -204,64 +204,78 @@ PanelWindow {
             }
         }
 
-        // AGENDA
-        CalendarPanel {
-            visible: !rootPanel.sensitiveData
-            panelWidth: rootPanel.width
-            Layout.fillWidth: true
-        }
-
-        // MONITORES DE SISTEMA
-        CpuMonitor {
-            Layout.fillWidth: true
-            graphHeight: Math.max(20, rootPanel.width * 0.2)
-        }
-
-        GpuMonitor {
-            Layout.fillWidth: true
-            graphHeight: Math.max(20, rootPanel.width * 0.2)
-        }
-
-        MemoryMonitor {
-            Layout.fillWidth: true
-            graphHeight: Math.max(20, rootPanel.width * 0.2)
-        }
-
-        TempMonitor {
-            Layout.fillWidth: true
-            graphHeight: Math.max(20, rootPanel.width * 0.2)
-        }
-
-        // BATTERY MONITORING
-        BatteryGraph {
-            id: batteryGraph
-        }
-
-        // TASKWARRIOR PANEL
-        TaskPanel {
-            id: taskPanel
-            Layout.fillWidth: true
-            Layout.preferredHeight: 300
-            visible: !rootPanel.sensitiveData
-        }
-
-        // DISCO
-        DiskMonitor {
-            Layout.fillWidth: true
-        }
-
-        // REDE
-        NetworkMonitor {
-            Layout.fillWidth: true
-            graphHeight: Math.max(20, rootPanel.width * 0.2)
-        }
-
-        // NOTIFICAÇÕES
-        NotificationPanel {
+        // SCROLLVIEW PRINCIPAL - Todo conteúdo a partir de Agenda
+        ScrollView {
+            id: mainScrollView
             Layout.fillWidth: true
             Layout.fillHeight: true
-            panelWidth: rootPanel.width
-            sensitiveData: rootPanel.sensitiveData
+            clip: true
+
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+            ColumnLayout {
+                width: mainScrollView.availableWidth
+                spacing: 5
+
+                // AGENDA
+                CalendarPanel {
+                    visible: !rootPanel.sensitiveData
+                    panelWidth: rootPanel.width
+                    Layout.fillWidth: true
+                }
+
+                // MONITORES DE SISTEMA
+                CpuMonitor {
+                    Layout.fillWidth: true
+                    graphHeight: Math.max(20, rootPanel.width * 0.2)
+                }
+
+                GpuMonitor {
+                    Layout.fillWidth: true
+                    graphHeight: Math.max(20, rootPanel.width * 0.2)
+                }
+
+                MemoryMonitor {
+                    Layout.fillWidth: true
+                    graphHeight: Math.max(20, rootPanel.width * 0.2)
+                }
+
+                TempMonitor {
+                    Layout.fillWidth: true
+                    graphHeight: Math.max(20, rootPanel.width * 0.2)
+                }
+
+                // BATTERY MONITORING
+                BatteryGraph {
+                    id: batteryGraph
+                }
+
+                // TASKWARRIOR PANEL
+                TaskPanel {
+                    id: taskPanel
+                    Layout.fillWidth: true
+                    visible: !rootPanel.sensitiveData
+                }
+
+                // DISCO
+                DiskMonitor {
+                    Layout.fillWidth: true
+                }
+
+                // REDE
+                NetworkMonitor {
+                    Layout.fillWidth: true
+                    graphHeight: Math.max(20, rootPanel.width * 0.2)
+                }
+
+                // NOTIFICAÇÕES
+                NotificationPanel {
+                    Layout.fillWidth: true
+                    panelWidth: rootPanel.width
+                    sensitiveData: rootPanel.sensitiveData
+                }
+            }
         }
     }
 }

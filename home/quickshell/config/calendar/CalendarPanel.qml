@@ -69,8 +69,8 @@ ColumnLayout {
     ListView {
         id: eventList
         Layout.fillWidth: true
-        Layout.preferredHeight: 150
-        clip: true
+        Layout.preferredHeight: contentHeight > 0 ? contentHeight : 50
+        interactive: false
 
         model: ListModel {
             id: eventModel
