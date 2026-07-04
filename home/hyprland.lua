@@ -247,31 +247,35 @@ hl.config({
 
 local mainMod = "SUPER"
 
-hl.bind(mainMod .. " + CTRL + V", hl.dsp.exec_cmd("pypr toggle volume"))
+-- Audio
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("pypr toggle volume"))
+hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("pypr toggle bluetooth"))
+
+hl.bind(mainMod .. " + R",            hl.dsp.exec_cmd(menu))
+hl.bind(mainMod .. " + SPACE",        hl.dsp.exec_cmd(terminal))
+hl.bind(mainMod .. " + SHIFT + Z",    hl.dsp.exec_cmd("pypr zoom"))
 hl.bind(mainMod .. " + CTRL + SPACE", hl.dsp.exec_cmd("pypr toggle term"))
-hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd("pypr zoom"))
+
+-- Power
+hl.bind(mainMod .. " + L",      hl.dsp.exec_cmd("hyprlock"))
+hl.bind(mainMod .. " + M",      hl.dsp.exec_cmd("hyprshutdown"))
 hl.bind(mainMod .. " + ESCAPE", hl.dsp.exec_cmd("pkill -x wlogout || wlogout"))
-hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({action = "toggle"}))
-hl.bind(mainMod .. " + D", hl.dsp.window.fullscreen({mode = "maximized", action = "toggle"}))
-hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd(terminal))
-hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("grim -g \"$(slurp)\" - | swappy -f -"))
-hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("pkill -SIGINT wl-screenrec || wl-screenrec --audio -f ~/Videos/recording-$(date +%Y%m%d-%H%M%S).mp4"))
+
+-- Window
+hl.bind(mainMod .. " + Q",         hl.dsp.window.close())
+hl.bind(mainMod .. " + P",         hl.dsp.window.pseudo())
+hl.bind(mainMod .. " + J",         hl.dsp.layout("togglesplit"))
+hl.bind(mainMod .. " + up",        hl.dsp.focus({ direction = "up" }))
+hl.bind(mainMod .. " + down",      hl.dsp.focus({ direction = "down" }))
+hl.bind(mainMod .. " + left",      hl.dsp.focus({ direction = "left" }))
+hl.bind(mainMod .. " + right",     hl.dsp.focus({ direction = "right" }))
 hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.float({action = "toggle"}))
-hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
+hl.bind(mainMod .. " + F",         hl.dsp.window.fullscreen({action = "toggle"}))
+hl.bind(mainMod .. " + D",         hl.dsp.window.fullscreen({mode = "maximized", action = "toggle"}))
 
-
-hl.bind(mainMod .. " + Q", hl.dsp.window.close())
-hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("hyprshutdown"))
-hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("pypr menu"))
-hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
-hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
-hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
-
--- Move focus with mainMod + arrow keys
-hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
-hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
-hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))
-hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))
+-- Screenshot
+hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("grim -g \"$(slurp)\" - |  swappy -f -"))
+hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("pkill -SIGINT wl-screenrec || wl-screenrec --audio -f ~/Videos/recording-$(date +%Y%m%d-%H%M%S).mp4"))
 
 -- Switch workspaces with mainMod + [0-9]
 -- Move active window to a workspace with mainMod + SHIFT + [0-9]
@@ -294,12 +298,12 @@ hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 -- Brightness and volume via avizo (OSD notifications)
-hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("lightctl up"),            { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("lightctl down"),          { locked = true, repeating = true })
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("volumectl -u up"),        { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("volumectl -u down"),      { locked = true, repeating = true })
-hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("volumectl toggle-mute"),  { locked = true, repeating = true })
-hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("volumectl -m toggle-mute"), { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessUp",         hl.dsp.exec_cmd("lightctl up"),              { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessDown",       hl.dsp.exec_cmd("lightctl down"),            { locked = true, repeating = true })
+hl.bind("XF86AudioRaiseVolume",        hl.dsp.exec_cmd("volumectl -u up"),          { locked = true, repeating = true })
+hl.bind("XF86AudioLowerVolume",        hl.dsp.exec_cmd("volumectl -u down"),        { locked = true, repeating = true })
+hl.bind("XF86AudioMute",               hl.dsp.exec_cmd("volumectl toggle-mute"),    { locked = true, repeating = true })
+hl.bind("XF86AudioMicMute",            hl.dsp.exec_cmd("volumectl -m toggle-mute"), { locked = true, repeating = true })
 hl.bind(mainMod .. " + XF86AudioMute", hl.dsp.exec_cmd("volumectl -m toggle-mute"), { locked = true })
 
 -- Requires playerctl
@@ -324,6 +328,13 @@ hl.window_rule({
 hl.window_rule({
     name  = "pypr-volume-scratchpad",
     match = { class = "wezterm_wiremix" },
+    float = true,
+    size  = "40% 70%",
+})
+
+hl.window_rule({
+    name  = "pypr-bluetooth-scratchpad",
+    match = { class = "wezterm_bluetui" },
     float = true,
     size  = "40% 70%",
 })

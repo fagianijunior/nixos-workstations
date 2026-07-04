@@ -71,7 +71,7 @@
   users.users.terabytes = {
     isNormalUser = true;
     description = "Carlos Fagiani Junior";
-    extraGroups = [ "wheel" "video" "audio" "docker" ];
+    extraGroups = [ "wheel" "video" "audio" "podman" ];
     shell = pkgs.fish;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFspHZN+DSFXVI3KD7hN5rbbu0GQizG5/EJkcGAD+it/ fagianijunior@gmail.com - Nobita"
@@ -112,14 +112,17 @@
     ssm-session-manager-plugin
     zip
     jq
-    docker-compose
+    podman-compose
     lm_sensors
     terraform-mcp-server
   ];
 
-  # Docker
-  virtualisation.docker = {
+  # Podman (rootless containers, no iptables/nftables conflicts)
+  virtualisation.podman = {
     enable = true;
+    dockerCompat = true;        # alias 'docker' -> 'podman'
+    dockerSocket.enable = true; # socket compat for tools expecting Docker (e.g. pack CLI)
+    defaultNetwork.settings.dns_enabled = true;
     autoPrune = {
       enable = true;
       dates = "weekly";

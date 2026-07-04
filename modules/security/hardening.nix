@@ -6,19 +6,18 @@
     enable = true;
     allowedTCPPorts = [ ]; # No open ports by default
     allowedUDPPorts = [ config.services.tailscale.port ];
-    trustedInterfaces = [ "tailscale0" "docker0" "br-+" ];
-    # Steam remote play ports are managed by programs.steam.remotePlay.openFirewall
+    trustedInterfaces = [ "tailscale0" ];
+    # Podman rootless uses slirp4netns/pasta - no bridge interfaces needed in firewall
   };
   networking.nftables.enable = true;
 
   # Kernel hardening (SECURITY-09)
   boot.kernel.sysctl = {
-    # Enable IP forwarding (required for Docker networking)
+    # Enable IP forwarding (required for Tailscale subnet routing if needed)
     "net.ipv4.ip_forward" = 1;
     "net.ipv6.conf.all.forwarding" = 0;
 
-    # Disable bridge-nf-call-iptables: prevents nftables/iptables from filtering
-    # bridge traffic between containers on the same network (Docker handles its own isolation)
+    # Podman rootless doesn't need bridge-nf-call-iptables
     "net.bridge.bridge-nf-call-iptables" = 0;
 
     # Prevent SYN flood attacks

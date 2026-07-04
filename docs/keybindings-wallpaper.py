@@ -33,7 +33,6 @@ CATEGORIES = {
         "binds": [
             ("SUPER + Space", "Terminal (WezTerm)"),
             ("SUPER + R", "Launcher"),
-            ("SUPER + V", "Menu (Pypr)"),
             ("SUPER + Escape", "Logout (wlogout)"),
             ("SUPER + L", "Lock (hyprlock)"),
             ("SUPER + M", "Shutdown"),

@@ -522,6 +522,41 @@ in
     rounding_small = 5
   '';
 
+  xdg.configFile."wiremix/wiremix.toml".text = ''
+    theme = "catppuccin-macchiato"
+    tab = "output"
+    max_volume_percent = 100.0
+
+    [themes.catppuccin-macchiato]
+    default_device = { fg = "#cad3f5" }
+    default_stream = { fg = "#a5adcb" }
+    selector = { fg = "#8bd5ca" }
+    tab = { fg = "#a5adcb" }
+    tab_selected = { fg = "#8bd5ca" }
+    tab_marker = { fg = "#8bd5ca" }
+    list_more = { fg = "#6e738d" }
+    node_title = { fg = "#cad3f5" }
+    node_target = { fg = "#b7bdf8" }
+    volume = { fg = "#cad3f5" }
+    volume_empty = { fg = "#494d64" }
+    volume_filled = { fg = "#8aadf4" }
+    meter_inactive = { fg = "#363a4f" }
+    meter_active = { fg = "#a6da95" }
+    meter_overload = { fg = "#ed8796" }
+    meter_center_inactive = { fg = "#363a4f" }
+    meter_center_active = { fg = "#a6da95" }
+    config_device = { fg = "#cad3f5" }
+    config_profile = { fg = "#a5adcb" }
+    dropdown_icon = { fg = "#8bd5ca" }
+    dropdown_border = { fg = "#494d64" }
+    dropdown_item = { fg = "#cad3f5" }
+    dropdown_selected = { fg = "#8bd5ca", add_modifier = "REVERSED" }
+    dropdown_more = { fg = "#6e738d" }
+    help_border = { fg = "#494d64" }
+    help_item = { fg = "#cad3f5" }
+    help_more = { fg = "#6e738d" }
+    '';
+
   # Pyprland configuration
   xdg.configFile."pypr/config.toml".source =
     let
@@ -549,6 +584,17 @@ in
           command = "wezterm start --always-new-process --class wezterm_wiremix -e wiremix";
           animation = "fromLeft";
           class = "wezterm_wiremix";
+          size = "40% 70%";
+          unfocus = "hide";
+          excludes = "*";
+          lazy = true;
+          margin = 90;
+          multi = false;
+        };
+        bluetooth = {
+          command = "wezterm start --always-new-process --class wezterm_wiremix -e bluetui";
+          animation = "fromLeft";
+          class = "wezterm_bluetui";
           size = "40% 70%";
           unfocus = "hide";
           excludes = "*";
