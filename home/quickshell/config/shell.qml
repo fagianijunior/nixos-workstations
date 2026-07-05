@@ -142,7 +142,7 @@ PanelWindow {
 
     Process {
         id: cancelInhibitProcess
-        command: ["fish", "-c", "kill $(pgrep -f 'systemd-inhibit --what=sleep') 2>/dev/null; true"]
+        command: ["pkill", "-f", "systemd-inhibit --what=sleep"]
         stdout: StdioCollector {
             onStreamFinished: {
                 inhibitButton.inhibitActive = false

@@ -28,31 +28,31 @@ RowLayout {
 
     Process {
         id: diskMonitorProcess
-        command: ["fish", "-c", "echo \"oi\" | df -h | grep -E '^/dev/' | awk '{print $6 \":\" $5}' | sed 's/%//' | sort"]
+        command: ["df", "--output=target,pcent", "-x", "tmpfs", "-x", "devtmpfs", "-x", "squashfs", "-x", "efivarfs"]
         running: true
 
         stdout: StdioCollector {
             onStreamFinished: {
-                let lines = this.text.trim().split('\n')
+                let lines = this.text.trim().split('\n').slice(1) // skip header
                 let colors = ["#cba6f7", "#fab387", "#89b4fa", "#a6e3a1", "#f38ba8"]
                 let diskData = []
 
-                for (let i = 0; i < lines.length && i < colors.length; i++) {
+                for (let i = 0; i < lines.length; i++) {
                     let line = lines[i].trim()
                     if (line === "") continue
 
-                    let parts = line.split(':')
-                    if (parts.length !== 2) continue
+                    let match = line.match(/^(.+?)\s+(\d+)%$/)
+                    if (!match) continue
 
-                    let mountPoint = parts[0]
-                    let usage = parseInt(parts[1])
+                    let mountPoint = match[1].trim()
+                    let usage = parseInt(match[2])
 
                     if (mountPoint.startsWith("/") && !mountPoint.includes("snap") &&
                         !mountPoint.includes("loop") && mountPoint.length < 20) {
                         diskData.push({
                             mountPoint: mountPoint,
                             usage: usage,
-                            color: colors[i % colors.length]
+                            color: colors[diskData.length % colors.length]
                         })
                     }
                 }
@@ -67,17 +67,8 @@ RowLayout {
                         color: disk.color
                     })
                 }
-                console.log("Disk model populated with", diskData.length, "disks")
 
                 diskTimer.start()
-            }
-        }
-
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (this.text.trim() !== "") {
-                    console.error("Disk monitor error:", this.text.trim())
-                }
             }
         }
     }

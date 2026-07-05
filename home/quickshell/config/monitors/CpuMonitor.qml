@@ -7,44 +7,45 @@ ColumnLayout {
     id: root
 
     property int graphHeight: Math.max(20, width * 0.2)
+    property var lastCpuVals: []
 
     Graph {
         id: cpuGraph
         label: "CPU"
-        color: "#a6e3a1" // Green
+        color: "#a6e3a1"
         valueSuffix: "%"
         maxValue: 100
         Layout.fillWidth: true
         Layout.preferredHeight: root.graphHeight
     }
 
-    Process {
-        id: cpuProcess
-        command: ["fish", "-c", "grep 'cpu ' /proc/stat; sleep 3; grep 'cpu ' /proc/stat"]
+    FileView {
+        id: statFile
+        path: "/proc/stat"
+        blockLoading: true
+
+        onTextChanged: {
+            let firstLine = statFile.text().split("\n")[0]
+            let parts = firstLine.split(/\s+/).slice(1).map(Number)
+            if (root.lastCpuVals.length > 0) {
+                let idle1 = root.lastCpuVals[3]
+                let idle2 = parts[3]
+                let total1 = root.lastCpuVals.reduce((a, b) => a + b, 0)
+                let total2 = parts.reduce((a, b) => a + b, 0)
+                let totalDiff = total2 - total1
+                let idleDiff = idle2 - idle1
+                if (totalDiff > 0) {
+                    cpuGraph.addValue(Math.round(100 * (1 - idleDiff / totalDiff)))
+                }
+            }
+            root.lastCpuVals = parts
+        }
+    }
+
+    Timer {
+        interval: 3000
         running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let lines = this.text.trim().split("\n")
-                if (lines.length === 2) {
-                    let vals1 = lines[0].split(/\s+/).slice(1).map(Number)
-                    let vals2 = lines[1].split(/\s+/).slice(1).map(Number)
-                    let idle1 = vals1[3], idle2 = vals2[3]
-                    let total1 = vals1.reduce((a,b)=>a+b,0)
-                    let total2 = vals2.reduce((a,b)=>a+b,0)
-                    let totalDiff = total2 - total1
-                    let idleDiff = idle2 - idle1
-                    let usage = Math.round(100 * (1 - idleDiff / totalDiff))
-                    cpuGraph.addValue(usage)
-                }
-                cpuProcess.running = true
-            }
-        }
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (this.text.trim() !== "") {
-                    cpuGraph.label = "CPU (Erro)"
-                }
-            }
-        }
+        repeat: true
+        onTriggered: statFile.reload()
     }
 }

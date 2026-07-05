@@ -158,7 +158,7 @@ ColumnLayout {
 
     Process {
         id: calendarProcess
-        command: ["fish", "-c", "$HOME/.local/bin/python3-google $HOME/.config/quickshell/get_events.py"]
+        command: [Quickshell.env("HOME") + "/.local/bin/python3-google", Quickshell.env("HOME") + "/.config/quickshell/get_events.py"]
         running: true
 
         stdout: StdioCollector {

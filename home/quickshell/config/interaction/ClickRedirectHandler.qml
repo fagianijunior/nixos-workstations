@@ -293,9 +293,9 @@ QtObject {
         
         console.log("Attempting to launch application:", executable)
         
-        // Launch the application in the background
+        // Launch the application via Hyprland dispatcher
         launchProcess.targetApp = executable
-        launchProcess.command = ["fish", "-c", `nohup ${executable} > /dev/null 2>&1 &`]
+        launchProcess.command = ["hyprctl", "dispatch", "exec", executable]
         launchProcess.running = true
         
         return true
