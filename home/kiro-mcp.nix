@@ -63,5 +63,11 @@ in
     if [ ! -f "$HOME/.kiro/settings/mcp.json" ]; then
       echo '${mcpConfig}' > "$HOME/.kiro/settings/mcp.json"
     fi
+
+    # Inject GitHub token from gh CLI if authenticated
+    GH_TOKEN=$(gh auth token 2>/dev/null || true)
+    if [ -n "$GH_TOKEN" ] && [ -f "$HOME/.kiro/settings/mcp.json" ]; then
+      sed -i "s/REPLACE_WITH_YOUR_TOKEN/$GH_TOKEN/" "$HOME/.kiro/settings/mcp.json"
+    fi
   '';
 }

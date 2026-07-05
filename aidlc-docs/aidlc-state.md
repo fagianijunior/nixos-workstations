@@ -49,7 +49,7 @@
 - [ ] Operations — PLACEHOLDER
 
 ## Current Status
-- **Lifecycle Phase**: INCEPTION (Devenv + Direnv Integration)
+- **Lifecycle Phase**: CONSTRUCTION (QuickShell GitHub Session)
 - **Current Stage**: Build and Test Complete
 - **Next Stage**: Operations (PLACEHOLDER)
 - **Status**: All stages complete. Ready for deploy.
@@ -58,10 +58,11 @@
 - NixOS Workstations base configuration (DONE)
 - QuickShell Integration (DONE)
 - Neovim Integration (DONE)
+- Devenv + Direnv Integration (DONE)
+- QuickShell GitHub Session (DONE)
 
-## Feature: Devenv + Direnv Integration
-- **Request**: Add and configure devenv and direnv in the NixOS/Home Manager configuration
-- **Existing**: programs.direnv already enabled with nix-direnv in home/default.nix
-- **Integration Point**: home/default.nix (Home Manager module)
-- **Stages to Execute**: Code Generation, Build and Test
-- **Stages Skipped**: All intermediate design stages (no business logic, NixOS module)
+## Feature: QuickShell GitHub Session
+- **Request**: Painel GitHub no QuickShell exibindo notificações, PRs e Issues por repositório
+- **Integration Point**: home/quickshell/config/github/ (3 QML files) + shell.qml
+- **Stages Executed**: Requirements Analysis, Workflow Planning, Code Generation, Build and Test
+- **Stages Skipped**: All intermediate design stages (UI panel, no business logic)

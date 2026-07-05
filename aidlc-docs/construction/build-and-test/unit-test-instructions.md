@@ -1,36 +1,53 @@
-# Unit Test Execution — Devenv + Direnv Integration
+# Unit Test Execution — QuickShell GitHub Session
 
-## Run Unit Tests
+## Context
+QML files não possuem framework de testes unitários tradicional neste projeto. A validação é feita via:
+1. `nix flake check --no-build` — valida que o flake e todos os módulos avaliam sem erros
+2. Verificação manual de runtime do QuickShell
 
-### 1. Execute All NixOS Tests (evaluation only)
+## Run Validation
+
+### 1. Validate Nix Flake (static)
 ```bash
-cd ~/Workspace/fagianijunior/nixos
+cd /home/terabytes/Workspace/fagianijunior/nixos
 nix flake check --no-build
 ```
+- **Expected**: `all checks passed!`
 
-Este comando avalia todas as derivações de teste sem construí-las. Garante que a configuração é sintaticamente correta e avalia sem erros.
-
-### 2. Execute Only the Devenv-Direnv Test (full build)
+### 2. Validate QML Files Exist
 ```bash
-nix build .#checks.x86_64-linux.devenv-direnv
+ls -la home/quickshell/config/github/
 ```
+- **Expected**: GitHubDataManager.qml, GitHubPanel.qml, RepoCard.qml
 
-Este comando constrói e executa o teste NixOS VM completo para devenv-direnv.
+### 3. Validate shell.qml Import
+```bash
+grep -n 'github' home/quickshell/config/shell.qml
+```
+- **Expected**: import `"./github"` e `GitHubPanel` presentes
 
-### 3. Review Test Results
-- **Expected**: Todos os assertions passam (devenv binary, nix.conf entries)
-- **Test Report**: Output no terminal com status pass/fail
-- **Cenários cobertos**:
-  - devenv binary existe no PATH do sistema
-  - devenv version executa com sucesso
-  - nix.conf contém substituter do devenv cachix
-  - nix.conf contém trusted-public-key do devenv cachix
-  - nix.conf contém @wheel em trusted-users
-  - nix.conf contém flakes em experimental-features
+## Functional Verification (manual, pós-deploy)
 
-### 4. Fix Failing Tests
-Se testes falharem:
-1. Verificar output de erro do NixOS test
-2. Verificar que `modules/common/default.nix` contém as entradas corretas
-3. Verificar que `devenv` está em `environment.systemPackages`
-4. Re-executar `nix flake check --no-build`
+### Cenário 1: Painel carrega sem erros
+1. Após `nixos-rebuild switch`, QuickShell reinicia
+2. Painel GitHub deve aparecer na barra lateral
+3. Sem mensagens de erro no header
+
+### Cenário 2: Notificações exibidas
+1. Com `gh auth status` confirmando autenticação
+2. Contagem de notificações não lidas exibida com badge vermelho
+3. Clique abre `https://github.com/notifications` no browser
+
+### Cenário 3: Repositórios listados
+1. PRs abertas pelo usuário aparecem em cards
+2. Issues abertas pelo usuário aparecem em cards
+3. Repos arquivados NÃO aparecem (filtro `archived:false`)
+4. Badges clicáveis abrem URLs corretas no browser
+
+### Cenário 4: Refresh funcional
+1. Botão ↻ dispara refresh manual imediato
+2. Timer auto-refresh opera a cada 1 hora
+
+### Cenário 5: Erro de autenticação
+1. Com `gh auth logout`, o painel exibe mensagem de erro
+2. Sem crash ou loop infinito

@@ -1,44 +1,39 @@
-# Build Instructions — Devenv + Direnv Integration
+# Build Instructions — QuickShell GitHub Session
 
 ## Prerequisites
-- **Build Tool**: Nix (with flakes enabled)
-- **System**: NixOS com nixos-unstable
-- **Flake**: `/home/terabytes/Workspace/fagianijunior/nixos/flake.nix`
+- **Build Tool**: Nix Flakes (nixos-unstable)
+- **Dependencies**: QuickShell runtime, `gh` CLI autenticado (`gh auth login`)
+- **Environment Variables**: Nenhuma adicional
+- **System Requirements**: NixOS com QuickShell configurado
 
 ## Build Steps
 
-### 1. Validate Flake Evaluation
+### 1. Validate Flake
 ```bash
-cd ~/Workspace/fagianijunior/nixos
+cd /home/terabytes/Workspace/fagianijunior/nixos
 nix flake check --no-build
 ```
 
-### 2. Build NixOS Configuration (Nobita)
+### 2. Rebuild NixOS (aplica as alterações)
 ```bash
-sudo nixos-rebuild build --flake .#nobita
+# Nobita (desktop)
+sudo nixos-rebuild switch --flake .#nobita
+
+# Doraemon (notebook)
+sudo nixos-rebuild switch --flake .#doraemon
 ```
 
-### 3. Build NixOS Configuration (Doraemon)
-```bash
-sudo nixos-rebuild build --flake .#doraemon
-```
-
-### 4. Apply Configuration (switch)
-```bash
-sudo nixos-rebuild switch --flake .#$(hostname)
-```
-
-## Verify Build Success
-- **Expected Output**: `nix flake check --no-build` retorna 0 sem erros
-- **Build Artifacts**: Derivações no `/nix/store`
-- **Common Warnings**: `Git tree is dirty` (normal antes de commit)
+### 3. Verify Build Success
+- **Expected Output**: `all checks passed!` no `nix flake check`
+- **Build Artifacts**: QML files copiados para `~/.config/quickshell/` via Home Manager (xdg.configFile)
+- **Common Warnings**: Nenhum esperado
 
 ## Troubleshooting
 
-### "Path not tracked by Git"
-- **Cause**: Novo arquivo criado mas não adicionado ao Git
-- **Solution**: `git add <file>` antes de rodar `nix flake check`
+### QuickShell não carrega o painel GitHub
+- **Causa**: Arquivo QML com erro de sintaxe ou import faltando
+- **Solução**: Verificar logs do QuickShell: `journalctl --user -u quickshell -f`
 
-### "error: attribute 'devenv' missing"
-- **Cause**: nixpkgs não contém devenv (improvável em unstable)
-- **Solution**: Verificar que flake.lock está atualizado: `nix flake update`
+### `gh` CLI não autenticado
+- **Causa**: Token OAuth expirado ou não configurado
+- **Solução**: `gh auth login` e selecionar GitHub.com com OAuth

@@ -735,6 +735,7 @@ in
     kiro
     kiro-cli
     github-mcp-server
+    gh
     awscli2
   ];
 

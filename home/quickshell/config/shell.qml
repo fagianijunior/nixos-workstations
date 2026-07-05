@@ -8,6 +8,7 @@ import "./calendar"
 import "./notifications"
 import "./battery"
 import "./taskwarrior"
+import "./github"
 
 
 PanelWindow {
@@ -256,6 +257,12 @@ PanelWindow {
                     id: taskPanel
                     Layout.fillWidth: true
                     visible: !rootPanel.sensitiveData
+                }
+
+                // GITHUB
+                GitHubPanel {
+                    id: githubPanel
+                    Layout.fillWidth: true
                 }
 
                 // DISCO

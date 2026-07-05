@@ -1,46 +1,50 @@
-# Build and Test Summary — Devenv + Direnv Integration
+# Build and Test Summary — QuickShell GitHub Session
 
 ## Build Status
-- **Build Tool**: Nix (flakes)
-- **Build Status**: ✅ Success
-- **Build Command**: `nix flake check --no-build`
-- **Result**: Zero errors, zero warnings (except expected "dirty tree")
+- **Build Tool**: Nix Flakes (nixos-unstable)
+- **Build Status**: Success (`nix flake check --no-build` → all checks passed)
+- **Build Artifacts**: 3 QML files + 1 modified shell.qml
+- **Build Time**: Instantâneo (QML não compilado, apenas avaliação Nix)
 
 ## Test Execution Summary
 
-### NixOS VM Test (devenv-direnv-test.nix)
-- **Total Assertions**: 6
-- **Status**: ✅ Evaluation passes (derivação avalia corretamente)
-- **Cenários**:
-  1. ✅ devenv binary exists in PATH
-  2. ✅ devenv version executes
-  3. ✅ nix.conf contains devenv.cachix.org substituter
-  4. ✅ nix.conf contains devenv.cachix.org-1 trusted key
-  5. ✅ nix.conf contains @wheel in trusted-users
-  6. ✅ nix.conf contains flakes in experimental-features
+### Static Validation (Nix Flake Check)
+- **Status**: Pass ✓
+- **Result**: `all checks passed!`
+- **All existing tests continue passing** (home-manager, boot, pipewire, networking, bluetooth, gpu, hyprland, desktop-tools, security, power-management, neovim, devenv-direnv)
 
-### Flake Check (all existing tests)
-- **Total Checks**: 12 (11 existing + 1 new)
-- **Status**: ✅ All evaluate without errors
+### Functional Verification (Manual)
+- **Cenários**: 5 definidos
+- **Cobrem**: Carregamento do painel, notificações, repositórios, refresh, erros
+- **Status**: Pendente (requer deploy via `nixos-rebuild switch`)
 
-## Files Modified
-| File | Change |
-|------|--------|
-| `modules/common/default.nix` | Added devenv to systemPackages, cachix substituter + trusted-public-key |
-| `home/default.nix` | Added direnv.silent, direnv.config (warn_timeout, hide_env_diff) |
-| `flake.nix` | Added devenv-direnv check |
+### Integration Tests (Manual)
+- **Cenários**: 3 definidos
+- **Cobrem**: gh CLI → GitHub API, xdg-open → browser, timer auto-refresh
+- **Status**: Pendente (requer runtime QuickShell)
 
-## Files Created
-| File | Purpose |
-|------|---------|
-| `tests/devenv-direnv-test.nix` | NixOS VM test for devenv + nix.conf validation |
+### Performance Tests
+- **Status**: N/A (timer de 1h, impacto negligível)
+
+### Additional Tests
+- **Contract Tests**: N/A
+- **Security Tests**: N/A (extension disabled por escolha do usuário)
+- **E2E Tests**: N/A (coberto por testes funcionais manuais)
 
 ## Overall Status
-- **Build**: ✅ Success
-- **All Tests**: ✅ Pass (evaluation)
-- **Ready for Deploy**: Yes (`sudo nixos-rebuild switch --flake .#$(hostname)`)
+- **Build**: Success ✓
+- **Static Validation**: Pass ✓
+- **Runtime Tests**: Pendente deploy
+- **Ready for Deploy**: Yes
+
+## Files Generated
+- `home/quickshell/config/github/GitHubDataManager.qml` (NEW)
+- `home/quickshell/config/github/RepoCard.qml` (NEW)
+- `home/quickshell/config/github/GitHubPanel.qml` (NEW)
+- `home/quickshell/config/shell.qml` (MODIFIED — import + component)
 
 ## Next Steps
-- Deploy via `nixos-rebuild switch`
-- Verificar manualmente `devenv version` e direnv silent mode
-- Testar `devenv init` em um projeto novo
+1. Commit das alterações
+2. `nixos-rebuild switch --flake .#nobita` (e/ou .#doraemon)
+3. Verificar painel no QuickShell
+4. Executar cenários de teste funcional manualmente
