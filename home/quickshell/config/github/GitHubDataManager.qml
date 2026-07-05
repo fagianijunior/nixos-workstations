@@ -31,6 +31,10 @@ Item {
     // Refresh interval in milliseconds (default: 1 hour)
     property int refreshInterval: 3600000
 
+    // Monitored scopes: orgs and users to show ALL open PRs/Issues
+    // (not just authored by @me)
+    property var monitoredScopes: ["org:Veezor", "user:fagianijunior", "user:fagiani"]
+
     // ---- Signals ----
 
     // Emitted when data has been refreshed
@@ -47,6 +51,10 @@ Item {
     property bool _issuesDone: false
     property var _prsRaw: []
     property var _issuesRaw: []
+
+    // Track scoped fetches (additional queries for monitored orgs/users)
+    property int _scopedPrsPending: 0
+    property int _scopedIssuesPending: 0
 
     // ---- Timer for Auto-Refresh ----
 
@@ -73,7 +81,6 @@ Item {
                 if (result && result !== "") {
                     githubDataManager.username = result
                     console.log("GitHub username:", result)
-                    // Now fetch the actual data
                     fetchAllData()
                 } else {
                     githubDataManager.errorMessage = "gh: no username returned"
@@ -124,21 +131,22 @@ Item {
         }
     }
 
-    // ---- Process: Fetch PRs ----
+    // ---- Process: Fetch personal PRs (--author=@me) ----
 
     Process {
         id: prsProcess
-        command: ["gh", "search", "prs", "--author=@me", "--state=open", "archived:false", "--json", "repository"]
+        command: ["gh", "search", "prs", "--author=@me", "--state=open", "archived:false", "--json", "repository,url"]
         running: false
 
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     let data = JSON.parse(this.text)
-                    githubDataManager._prsRaw = Array.isArray(data) ? data : []
+                    if (Array.isArray(data)) {
+                        githubDataManager._prsRaw = githubDataManager._prsRaw.concat(data)
+                    }
                 } catch (e) {
                     console.error("PRs JSON parse error:", e)
-                    githubDataManager._prsRaw = []
                 }
                 githubDataManager._prsDone = true
                 checkAllDone()
@@ -149,7 +157,6 @@ Item {
             onStreamFinished: {
                 if (this.text.trim() !== "") {
                     console.error("PRs fetch error:", this.text.trim())
-                    githubDataManager._prsRaw = []
                     githubDataManager._prsDone = true
                     checkAllDone()
                 }
@@ -157,21 +164,22 @@ Item {
         }
     }
 
-    // ---- Process: Fetch Issues ----
+    // ---- Process: Fetch personal Issues (--author=@me) ----
 
     Process {
         id: issuesProcess
-        command: ["gh", "search", "issues", "--author=@me", "--state=open", "archived:false", "--json", "repository"]
+        command: ["gh", "search", "issues", "--author=@me", "--state=open", "archived:false", "--json", "repository,url"]
         running: false
 
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     let data = JSON.parse(this.text)
-                    githubDataManager._issuesRaw = Array.isArray(data) ? data : []
+                    if (Array.isArray(data)) {
+                        githubDataManager._issuesRaw = githubDataManager._issuesRaw.concat(data)
+                    }
                 } catch (e) {
                     console.error("Issues JSON parse error:", e)
-                    githubDataManager._issuesRaw = []
                 }
                 githubDataManager._issuesDone = true
                 checkAllDone()
@@ -182,10 +190,79 @@ Item {
             onStreamFinished: {
                 if (this.text.trim() !== "") {
                     console.error("Issues fetch error:", this.text.trim())
-                    githubDataManager._issuesRaw = []
                     githubDataManager._issuesDone = true
                     checkAllDone()
                 }
+            }
+        }
+    }
+
+    // ---- Dynamic Process for scoped PR queries ----
+
+    Process {
+        id: scopedPrsProcess
+        command: []
+        running: false
+
+        property int currentIndex: 0
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    let data = JSON.parse(this.text)
+                    if (Array.isArray(data)) {
+                        githubDataManager._prsRaw = githubDataManager._prsRaw.concat(data)
+                    }
+                } catch (e) {
+                    console.error("Scoped PRs JSON parse error:", e)
+                }
+                scopedPrsProcess.currentIndex++
+                fetchNextScopedPrs()
+            }
+        }
+
+        stderr: StdioCollector {
+            onStreamFinished: {
+                if (this.text.trim() !== "") {
+                    console.error("Scoped PRs fetch error:", this.text.trim())
+                }
+                scopedPrsProcess.currentIndex++
+                fetchNextScopedPrs()
+            }
+        }
+    }
+
+    // ---- Dynamic Process for scoped Issue queries ----
+
+    Process {
+        id: scopedIssuesProcess
+        command: []
+        running: false
+
+        property int currentIndex: 0
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    let data = JSON.parse(this.text)
+                    if (Array.isArray(data)) {
+                        githubDataManager._issuesRaw = githubDataManager._issuesRaw.concat(data)
+                    }
+                } catch (e) {
+                    console.error("Scoped Issues JSON parse error:", e)
+                }
+                scopedIssuesProcess.currentIndex++
+                fetchNextScopedIssues()
+            }
+        }
+
+        stderr: StdioCollector {
+            onStreamFinished: {
+                if (this.text.trim() !== "") {
+                    console.error("Scoped Issues fetch error:", this.text.trim())
+                }
+                scopedIssuesProcess.currentIndex++
+                fetchNextScopedIssues()
             }
         }
     }
@@ -200,9 +277,12 @@ Item {
         _issuesDone = false
         _prsRaw = []
         _issuesRaw = []
+        _scopedPrsPending = monitoredScopes.length
+        _scopedIssuesPending = monitoredScopes.length
+        scopedPrsProcess.currentIndex = 0
+        scopedIssuesProcess.currentIndex = 0
 
         if (username === "") {
-            // Need to fetch username first
             usernameProcess.running = true
         } else {
             fetchAllData()
@@ -215,21 +295,61 @@ Item {
         notificationsProcess.running = true
         prsProcess.running = true
         issuesProcess.running = true
+
+        // Start scoped fetches sequentially
+        fetchNextScopedPrs()
+        fetchNextScopedIssues()
+    }
+
+    function fetchNextScopedPrs() {
+        if (scopedPrsProcess.currentIndex >= monitoredScopes.length) {
+            // All scoped PR fetches done
+            _scopedPrsPending = 0
+            checkAllDone()
+            return
+        }
+
+        let scope = monitoredScopes[scopedPrsProcess.currentIndex]
+        scopedPrsProcess.command = ["gh", "search", "prs", "--state=open", "archived:false", scope, "--json", "repository,url"]
+        scopedPrsProcess.running = true
+    }
+
+    function fetchNextScopedIssues() {
+        if (scopedIssuesProcess.currentIndex >= monitoredScopes.length) {
+            // All scoped Issue fetches done
+            _scopedIssuesPending = 0
+            checkAllDone()
+            return
+        }
+
+        let scope = monitoredScopes[scopedIssuesProcess.currentIndex]
+        scopedIssuesProcess.command = ["gh", "search", "issues", "--state=open", "archived:false", scope, "--json", "repository,url"]
+        scopedIssuesProcess.running = true
     }
 
     function checkAllDone() {
         if (!_notificationsDone || !_prsDone || !_issuesDone) {
             return
         }
+        if (_scopedPrsPending > 0 || _scopedIssuesPending > 0) {
+            return
+        }
 
-        // All fetches complete — aggregate by repository
+        // All fetches complete — deduplicate and aggregate by repository
         let repoMap = {}
 
-        // Count PRs per repo
+        // Count PRs per repo (deduplicated by nameWithOwner)
+        let seenPrs = {}
         for (let i = 0; i < _prsRaw.length; i++) {
             let pr = _prsRaw[i]
             if (pr.repository && pr.repository.nameWithOwner) {
                 let key = pr.repository.nameWithOwner
+
+                // Deduplicate: use a composite key if url available, else just count
+                let prId = (pr.url || "") + key + i.toString()
+                if (pr.url && seenPrs[pr.url]) continue
+                if (pr.url) seenPrs[pr.url] = true
+
                 if (!repoMap[key]) {
                     repoMap[key] = { prCount: 0, issueCount: 0 }
                 }
@@ -237,11 +357,17 @@ Item {
             }
         }
 
-        // Count Issues per repo
+        // Count Issues per repo (deduplicated)
+        let seenIssues = {}
         for (let i = 0; i < _issuesRaw.length; i++) {
             let issue = _issuesRaw[i]
             if (issue.repository && issue.repository.nameWithOwner) {
                 let key = issue.repository.nameWithOwner
+
+                let issueId = (issue.url || "") + key + i.toString()
+                if (issue.url && seenIssues[issue.url]) continue
+                if (issue.url) seenIssues[issue.url] = true
+
                 if (!repoMap[key]) {
                     repoMap[key] = { prCount: 0, issueCount: 0 }
                 }

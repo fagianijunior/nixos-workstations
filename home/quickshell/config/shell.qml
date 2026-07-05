@@ -259,12 +259,6 @@ PanelWindow {
                     visible: !rootPanel.sensitiveData
                 }
 
-                // GITHUB
-                GitHubPanel {
-                    id: githubPanel
-                    Layout.fillWidth: true
-                }
-
                 // DISCO
                 DiskMonitor {
                     Layout.fillWidth: true
@@ -274,6 +268,12 @@ PanelWindow {
                 NetworkMonitor {
                     Layout.fillWidth: true
                     graphHeight: Math.max(20, rootPanel.width * 0.2)
+                }
+
+                // GITHUB
+                GitHubPanel {
+                    id: githubPanel
+                    Layout.fillWidth: true
                 }
 
                 // NOTIFICAÇÕES

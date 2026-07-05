@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, pkgs, ... }:
 
 let
   mcpConfig = builtins.toJSON {
@@ -55,18 +55,17 @@ let
   };
 in
 {
-  # Creates ~/.kiro/settings/mcp.json only if it doesn't exist yet.
-  # The file is NOT managed by Home Manager (no symlink) so you can edit it
-  # freely without needing a rebuild — tokens, disabled flags, etc.
+  # Generates ~/.kiro/settings/mcp.json on every activation.
+  # The file is a regular file (NOT a symlink) so the IDE can toggle
+  # individual MCP servers via its UI. Next `home-manager switch` will
+  # regenerate it with the canonical config + fresh gh token.
   home.activation.kiroMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     mkdir -p "$HOME/.kiro/settings"
-    if [ ! -f "$HOME/.kiro/settings/mcp.json" ]; then
-      echo '${mcpConfig}' > "$HOME/.kiro/settings/mcp.json"
-    fi
+    echo '${mcpConfig}' > "$HOME/.kiro/settings/mcp.json"
 
     # Inject GitHub token from gh CLI if authenticated
-    GH_TOKEN=$(gh auth token 2>/dev/null || true)
-    if [ -n "$GH_TOKEN" ] && [ -f "$HOME/.kiro/settings/mcp.json" ]; then
+    GH_TOKEN=$(${pkgs.gh}/bin/gh auth token 2>/dev/null || true)
+    if [ -n "$GH_TOKEN" ]; then
       sed -i "s/REPLACE_WITH_YOUR_TOKEN/$GH_TOKEN/" "$HOME/.kiro/settings/mcp.json"
     fi
   '';

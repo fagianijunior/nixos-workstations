@@ -1,5 +1,5 @@
 // GitHubPanel.qml - Main GitHub status panel
-// Displays notifications count and repository cards with PR/Issue counts
+// Displays notifications count and owner-grouped repository cards
 
 import Quickshell
 import Quickshell.Io
@@ -11,7 +11,7 @@ Rectangle {
     id: githubPanel
 
     // Visual properties - Catppuccin Macchiato
-    color: Qt.rgba(36/255, 39/255, 58/255, 0.7)  // Base with transparency
+    color: Qt.rgba(36/255, 39/255, 58/255, 0.7)
     radius: 8
     implicitHeight: innerLayout.implicitHeight
 
@@ -21,7 +21,7 @@ Rectangle {
         id: dataManager
 
         onDataUpdated: {
-            rebuildRepoModel()
+            rebuildOwnerModel()
         }
 
         onErrorOccurred: function(message) {
@@ -61,7 +61,7 @@ Rectangle {
             // Title
             Text {
                 text: "GitHub"
-                color: "#cad3f5"  // Text
+                color: "#cad3f5"
                 font.pixelSize: Math.max(14, Math.min(18, rootPanel.width * 0.07))
                 font.bold: true
                 Layout.fillWidth: true
@@ -142,13 +142,13 @@ Rectangle {
                     Layout.preferredWidth: notifCountText.implicitWidth + 10
                     Layout.preferredHeight: 18
                     radius: 9
-                    color: "#ed8796"  // Red
+                    color: "#ed8796"
 
                     Text {
                         id: notifCountText
                         anchors.centerIn: parent
                         text: dataManager.notificationCount.toString()
-                        color: "#24273a"  // Base (dark text on red bg)
+                        color: "#24273a"
                         font.pixelSize: 9
                         font.bold: true
                     }
@@ -158,7 +158,7 @@ Rectangle {
                 Text {
                     visible: dataManager.notificationCount === 0 && !dataManager.isLoading
                     text: "0"
-                    color: "#6c7086"  // Overlay0
+                    color: "#6c7086"
                     font.pixelSize: 9
                 }
             }
@@ -178,37 +178,34 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: "#494d64"  // Surface1
-            visible: repoListView.count > 0
+            color: "#494d64"
+            visible: ownerListView.count > 0
         }
 
-        // Repository cards list
+        // Owner cards list (grouped by org/user)
         ListView {
-            id: repoListView
+            id: ownerListView
             Layout.fillWidth: true
             Layout.preferredHeight: contentHeight > 0 ? contentHeight : 0
             interactive: false
             spacing: 4
 
             model: ListModel {
-                id: repoModel
+                id: ownerModel
             }
 
             delegate: RepoCard {
-                width: repoListView.width
-                repoName: model.repoName
-                owner: model.owner
-                fullName: model.fullName
-                prCount: model.prCount
-                issueCount: model.issueCount
+                width: ownerListView.width
+                ownerName: model.ownerName
+                repos: JSON.parse(model.reposJson)
             }
         }
 
         // Empty state
         Text {
-            visible: repoListView.count === 0 && !dataManager.isLoading && dataManager.errorMessage === ""
+            visible: ownerListView.count === 0 && !dataManager.isLoading && dataManager.errorMessage === ""
             text: "No open PRs or Issues"
-            color: "#6c7086"  // Overlay0
+            color: "#6c7086"
             font.pixelSize: 9
             Layout.alignment: Qt.AlignHCenter
         }
@@ -216,21 +213,52 @@ Rectangle {
 
     // ---- Helper Functions ----
 
-    function rebuildRepoModel() {
-        repoModel.clear()
+    function rebuildOwnerModel() {
+        ownerModel.clear()
 
+        // Group repoData by owner
+        let ownerMap = {}
         let repos = dataManager.repoData
+
         for (let i = 0; i < repos.length; i++) {
-            repoModel.append({
-                repoName: repos[i].repoName,
-                owner: repos[i].owner,
-                fullName: repos[i].fullName,
-                prCount: repos[i].prCount,
-                issueCount: repos[i].issueCount
+            let r = repos[i]
+            let owner = r.owner
+            if (!ownerMap[owner]) {
+                ownerMap[owner] = []
+            }
+            ownerMap[owner].push({
+                repoName: r.repoName,
+                fullName: r.fullName,
+                prCount: r.prCount,
+                issueCount: r.issueCount
             })
         }
 
-        console.log("GitHub repo model rebuilt:", repoModel.count, "repos")
+        // Sort owners: monitored scopes first, then alphabetical
+        let ownerKeys = Object.keys(ownerMap)
+        let monitoredNames = dataManager.monitoredScopes.map(function(s) {
+            return s.replace(/^(org:|user:)/, "")
+        })
+
+        ownerKeys.sort(function(a, b) {
+            let aIdx = monitoredNames.indexOf(a)
+            let bIdx = monitoredNames.indexOf(b)
+            // Monitored scopes first (by their config order)
+            if (aIdx >= 0 && bIdx >= 0) return aIdx - bIdx
+            if (aIdx >= 0) return -1
+            if (bIdx >= 0) return 1
+            return a.localeCompare(b)
+        })
+
+        for (let i = 0; i < ownerKeys.length; i++) {
+            let owner = ownerKeys[i]
+            ownerModel.append({
+                ownerName: owner,
+                reposJson: JSON.stringify(ownerMap[owner])
+            })
+        }
+
+        console.log("GitHub owner model rebuilt:", ownerModel.count, "owners")
     }
 
     // Initial data load
