@@ -14,7 +14,6 @@ in
   imports = [
     catppuccin.homeModules.catppuccin
     ./kiro-mcp.nix
-    ./nix-github-token.nix
     ./neovim
     ./quickshell.nix
     ./taskwarrior
@@ -146,9 +145,9 @@ in
 
       credential.helper = "";
 
-      # Force SSH
-      "url \"git@github.com:\"" = { insteadOf = "https://github.com/"; };
-      "url \"git@gitlab.com:\"" = { insteadOf = "https://gitlab.com/"; };
+      # NOTE: insteadOf SSH redirect removed — Nix uses libgit2 internally and
+      # cannot handle SSH rewrites when fetching flake inputs. Git CLI continues
+      # to use SSH via ~/.ssh/config (Host github.com / gitlab.com).
     };
   };
 
