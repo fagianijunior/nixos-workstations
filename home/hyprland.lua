@@ -53,6 +53,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("[workspace 3] clickup")
   hl.exec_cmd("[workspace 3] Telegram")
   hl.exec_cmd("[workspace 3] slack")
+  hl.exec_cmd("[workspace 3] whatsapp-electron")
 end)
 
 -- Clean shutdown: stop session target so systemd services stop gracefully

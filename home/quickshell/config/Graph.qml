@@ -9,6 +9,7 @@ ColumnLayout {
 
     property string label: ""
     property color color: "lime"
+    property color labelColor: "white"
     property string valueSuffix: ""
     property double maxValue: 100
     property var history: []
@@ -41,14 +42,14 @@ ColumnLayout {
 
         Text { 
             text: label
-            color: "white"
+            color: root.labelColor
             font.pixelSize: 12
             padding: 5
             Layout.alignment: Qt.AlignLeft
         }
         Text { 
             text: currentValue.toFixed(1) + valueSuffix
-            color: "white"
+            color: root.labelColor
             font.pixelSize: 12
             Layout.alignment: Qt.AlignRight
             padding: 5

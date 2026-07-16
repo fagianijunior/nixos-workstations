@@ -14,10 +14,12 @@ in
   imports = [
     catppuccin.homeModules.catppuccin
     ./kiro-mcp.nix
+    ./nix-github-token.nix
     ./neovim
     ./quickshell.nix
     ./taskwarrior
     ./taskwarrior-tui
+    ./pomodoro.nix
   ];
 
   home.username = "terabytes";

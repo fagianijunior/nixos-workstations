@@ -60,6 +60,7 @@
 - Neovim Integration (DONE)
 - Devenv + Direnv Integration (DONE)
 - QuickShell GitHub Session (DONE)
+- QuickShell Pomodoro (DONE)
 
 ## Feature: QuickShell GitHub Session
 - **Request**: Painel GitHub no QuickShell exibindo notificações, PRs e Issues por repositório

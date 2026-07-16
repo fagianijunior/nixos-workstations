@@ -9,6 +9,7 @@ import "./notifications"
 import "./battery"
 import "./taskwarrior"
 import "./github"
+import "./pomodoro"
 
 
 PanelWindow {
@@ -219,19 +220,11 @@ PanelWindow {
                 width: mainScrollView.availableWidth
                 spacing: 5
 
-                // AGENDA
-                CalendarPanel {
-                    visible: !rootPanel.sensitiveData
-                    panelWidth: rootPanel.width
-                    Layout.fillWidth: true
-                }
-
                 // MONITORES DE SISTEMA
                 CpuMonitor {
                     Layout.fillWidth: true
                     graphHeight: Math.max(20, rootPanel.width * 0.2)
                 }
-
                 GpuMonitor {
                     Layout.fillWidth: true
                     graphHeight: Math.max(20, rootPanel.width * 0.2)
@@ -242,21 +235,10 @@ PanelWindow {
                     graphHeight: Math.max(20, rootPanel.width * 0.2)
                 }
 
-                TempMonitor {
-                    Layout.fillWidth: true
-                    graphHeight: Math.max(20, rootPanel.width * 0.2)
-                }
 
                 // BATTERY MONITORING
                 BatteryGraph {
                     id: batteryGraph
-                }
-
-                // TASKWARRIOR PANEL
-                TaskPanel {
-                    id: taskPanel
-                    Layout.fillWidth: true
-                    visible: !rootPanel.sensitiveData
                 }
 
                 // DISCO
@@ -268,6 +250,26 @@ PanelWindow {
                 NetworkMonitor {
                     Layout.fillWidth: true
                     graphHeight: Math.max(20, rootPanel.width * 0.2)
+                }
+
+                // AGENDA
+                CalendarPanel {
+                    visible: !rootPanel.sensitiveData
+                    panelWidth: rootPanel.width
+                    Layout.fillWidth: true
+                }
+
+                // TASKWARRIOR PANEL
+                TaskPanel {
+                    id: taskPanel
+                    Layout.fillWidth: true
+                    visible: !rootPanel.sensitiveData
+                }
+
+                // POMODORO
+                PomodoroPanel {
+                    id: pomodoroPanel
+                    Layout.fillWidth: true
                 }
 
                 // GITHUB
@@ -286,3 +288,4 @@ PanelWindow {
         }
     }
 }
+

@@ -10,23 +10,18 @@ ColumnLayout {
     property string iface: ""
     property real lastRx: -1
     property real lastTx: -1
+    property string downLabel: "↓ 0 KB/s"
+    property string upLabel: "↑ 0 KB/s"
 
-    Graph {
-        id: netGraph
-        label: "DOWN ↓"
-        color: "#94e2d5"
-        valueSuffix: " KB/s"
+    DualGraph {
+        id: networkGraph
+        label1: "DOWN"
+        label2: "UP"
+        color1: "#94e2d5"
+        color2: "#fab387"
+        displayLabel1: root.downLabel
+        displayLabel2: root.upLabel
         maxValue: 60000
-        Layout.fillWidth: true
-        Layout.preferredHeight: root.graphHeight
-    }
-
-    Graph {
-        id: netGraphUpload
-        label: "UP ↑"
-        color: "#fab387"
-        valueSuffix: " KB/s"
-        maxValue: 30000
         Layout.fillWidth: true
         Layout.preferredHeight: root.graphHeight
     }
@@ -67,16 +62,24 @@ ColumnLayout {
         path: ""
 
         onTextChanged: {
-            // Process both rx and tx when tx finishes loading
             let rx = parseInt(rxFile.text())
             let tx = parseInt(txFile.text())
 
             if (!isNaN(rx) && !isNaN(tx)) {
                 if (root.lastRx >= 0 && root.lastTx >= 0) {
-                    let downKBs = Math.round((rx - root.lastRx) / 3 / 1024)
-                    let upKBs = Math.round((tx - root.lastTx) / 3 / 1024)
-                    netGraph.addValue(Math.max(0, downKBs))
-                    netGraphUpload.addValue(Math.max(0, upKBs))
+                    let downKBs = Math.max(0, Math.round((rx - root.lastRx) / 3 / 1024))
+                    let upKBs = Math.max(0, Math.round((tx - root.lastTx) / 3 / 1024))
+
+                    root.downLabel = downKBs >= 1000
+                        ? "↓ " + (downKBs / 1024).toFixed(1) + " MB/s"
+                        : "↓ " + downKBs + " KB/s"
+
+                    root.upLabel = upKBs >= 1000
+                        ? "↑ " + (upKBs / 1024).toFixed(1) + " MB/s"
+                        : "↑ " + upKBs + " KB/s"
+
+                    networkGraph.addValue1(downKBs)
+                    networkGraph.addValue2(upKBs)
                 }
                 root.lastRx = rx
                 root.lastTx = tx

@@ -7,7 +7,8 @@
     powerOnBoot = true;
     settings = {
       General = {
-        Enable = "Source,Sink,Media,Socket";
+        # Enable foi removida no BlueZ 5.x recente - perfis são habilitados
+        # automaticamente quando o WirePlumber registra os endpoints
         Experimental = true;
       };
     };

@@ -8,24 +8,52 @@ ColumnLayout {
 
     property int graphHeight: Math.max(20, width * 0.2)
     property string gpuHwmonPath: ""
+    property double vramTotalGb: 0
+    property double vramUsedGb: 0
+    property int gpuTemp: 0
 
-    // GPU VRAM Usage
-    Graph {
-        id: gpuUsageGraph
-        label: "VRAM"
-        color: "#f38ba8"
-        valueSuffix: "%"
+    Text {
+        id: gpuName
+        text: "carregando..."
+        font.pixelSize: 10
+        font.bold: true
+        color: "#cad3f5"
+        Layout.alignment: Qt.AlignLeft
+    }
+
+    FileView {
+        id: amdGpuFile
+        // TO FIX
+        path: "/home/terabytes/.gpu_name"
+        blockLoading: true
+
+        onTextChanged: {
+            let rawText = amdGpuFile.text().trim()
+            
+                gpuName.text = rawText
+        }
+    }
+    // GPU Usage + Temperature (dual graph)
+    DualGraph {
+        id: gpuDualGraph
+        label1: "GPU"
+        label2: "Temp"
+        color1: "#a6e3a1"
+        color2: "#fab387"
+        displayLabel1: "GPU " + gpuDualGraph.currentValue1.toFixed(0) + "%"
+        displayLabel2: root.gpuTemp + "°C"
         maxValue: 100
         Layout.fillWidth: true
         Layout.preferredHeight: root.graphHeight
     }
 
-    // GPU Temperature
+    // VRAM usage graph
     Graph {
-        id: gpuTempGraph
-        label: "Temp GPU"
-        color: "#fab387"
-        valueSuffix: "°C"
+        id: vramChart
+        label: "VRAM " + root.vramUsedGb.toFixed(1) + "/" + root.vramTotalGb.toFixed(1) + " GB"
+        color: "#f38ba8"
+        labelColor: "#f38ba8"
+        valueSuffix: "%"
         maxValue: 100
         Layout.fillWidth: true
         Layout.preferredHeight: root.graphHeight
@@ -48,6 +76,18 @@ ColumnLayout {
     }
 
     FileView {
+        id: gpuBusyFile
+        path: root.gpuHwmonPath !== "" ? root.gpuHwmonPath + "/device/gpu_busy_percent" : ""
+
+        onTextChanged: {
+            let busy = parseInt(gpuBusyFile.text())
+            if (!isNaN(busy)) {
+                gpuDualGraph.addValue1(busy)
+            }
+        }
+    }
+
+    FileView {
         id: vramTotalFile
         path: root.gpuHwmonPath !== "" ? root.gpuHwmonPath + "/device/mem_info_vram_total" : ""
         blockLoading: true
@@ -61,7 +101,9 @@ ColumnLayout {
             let total = parseInt(vramTotalFile.text())
             let used = parseInt(vramUsedFile.text())
             if (!isNaN(total) && !isNaN(used) && total > 0) {
-                gpuUsageGraph.addValue(Math.round((used * 100) / total))
+                root.vramTotalGb = total / (1024 * 1024 * 1024)
+                root.vramUsedGb = used / (1024 * 1024 * 1024)
+                vramChart.addValue(Math.round((used * 100) / total))
             }
         }
     }
@@ -73,7 +115,8 @@ ColumnLayout {
         onTextChanged: {
             let temp = parseInt(gpuTempFile.text())
             if (!isNaN(temp) && temp > 0) {
-                gpuTempGraph.addValue(Math.round(temp / 1000))
+                root.gpuTemp = Math.round(temp / 1000)
+                gpuDualGraph.addValue2(root.gpuTemp)
             }
         }
     }
@@ -83,6 +126,7 @@ ColumnLayout {
         running: root.gpuHwmonPath !== ""
         repeat: true
         onTriggered: {
+            gpuBusyFile.reload()
             vramTotalFile.reload()
             vramUsedFile.reload()
             gpuTempFile.reload()

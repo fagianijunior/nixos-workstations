@@ -22,7 +22,7 @@ QtObject {
         "code": { executable: "code", displayName: "Visual Studio Code" },
         "chromium": { executable: "chromium", displayName: "Chromium" },
         "telegram": { executable: "telegram-desktop", displayName: "Telegram" },
-        "whatsapp": { executable: "whatsapp-for-linux", displayName: "WhatsApp" },
+        "whatsapp": { executable: "whatsapp-electron", displayName: "WhatsApp" },
         "signal": { executable: "signal-desktop", displayName: "Signal" }
     }
     
@@ -39,7 +39,7 @@ QtObject {
         "discord-canary": "discord",
         "discord-ptb": "discord",
         "telegram-desktop": "telegram",
-        "whatsapp-for-linux": "whatsapp",
+        "whatsapp-electron": "whatsapp",
         "signal-desktop": "signal"
     }
     
