@@ -31,7 +31,8 @@
         matchConfig.Type = "ether";
         networkConfig = {
           DHCP = "yes";
-          DNS = [ "1.1.1.1" "8.8.8.8" ];
+          IPv6AcceptRA = true;
+          DNS = [ "1.1.1.2" "9.9.9.9" "2606:4700:4700::1112" "2620:fe::fe" ];
         };
         dhcpV4Config = {
           RouteMetric = 100;
@@ -41,7 +42,8 @@
         matchConfig.Type = "wlan";
         networkConfig = {
           DHCP = "yes";
-          DNS = [ "1.1.1.1" "8.8.8.8" ];
+          IPv6AcceptRA = true;
+          DNS = [ "1.1.1.2" "9.9.9.9" "2606:4700:4700::1112" "2620:fe::fe" ];
         };
         dhcpV4Config = {
           RouteMetric = 600;
@@ -56,9 +58,20 @@
     settings.Resolve = {
       DNSSEC = "allow-downgrade";
       Domains = [ "~." ];
-      FallbackDNS = [ "1.1.1.1" "8.8.8.8" ];
+      FallbackDNS = [ "1.1.1.2" "9.9.9.9" "2606:4700:4700::1112" "2620:fe::fe" ];
     };
   };
+
+  # Prefer IPv4 over IPv6 for outgoing connections (gai.conf)
+  # IPv6 infrastructure in Brazil has high latency (Miami routing),
+  # causing Happy Eyeballs fallback delays and occasional timeouts.
+  # IPv6 remains fully functional — only connection preference order changes.
+  environment.etc."gai.conf".text = ''
+    # Prefer IPv4 (precedence 100) over IPv6 (precedence 20) for Brazilian ISPs
+    # where IPv6 routes to international PoPs instead of local infrastructure.
+    precedence ::ffff:0:0/96  100
+    precedence ::/0            20
+  '';
 
   # Fix: wait-online should succeed when any interface is online
   # Prevents boot failure when wireless isn't ready yet
