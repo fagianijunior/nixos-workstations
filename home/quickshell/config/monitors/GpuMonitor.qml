@@ -60,10 +60,9 @@ ColumnLayout {
     }
 
     // Discover amdgpu hwmon path dynamically
-    Repeater {
+    Instantiator {
         model: ["hwmon0", "hwmon1", "hwmon2", "hwmon3", "hwmon4", "hwmon5"]
-
-        FileView {
+        delegate: FileView {
             path: "/sys/class/hwmon/" + modelData + "/name"
             blockLoading: true
 

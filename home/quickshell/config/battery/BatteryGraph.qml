@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
+import QtQml
 import "../"
 import "../utils"
 
@@ -37,10 +38,10 @@ Graph {
     }
 
     // Discover battery path by checking common power_supply names
-    Repeater {
+    Instantiator {
         model: ["BAT0", "BAT1", "BAT2", "BATT", "battery"]
-
-        FileView {
+        
+        delegate: FileView {
             path: "/sys/class/power_supply/" + modelData + "/type"
             blockLoading: true
 

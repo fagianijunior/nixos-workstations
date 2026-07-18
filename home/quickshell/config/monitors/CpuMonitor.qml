@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
+import QtQml
+
 import ".."
 
 ColumnLayout {
@@ -83,10 +85,10 @@ ColumnLayout {
     }
 
     // CPU temperature — k10temp (AMD) or coretemp (Intel)
-    Repeater {
+    Instantiator {
         model: ["hwmon0", "hwmon1", "hwmon2", "hwmon3", "hwmon4", "hwmon5"]
 
-        FileView {
+        delegate: FileView {
             id: nameFile
             path: "/sys/class/hwmon/" + modelData + "/name"
             blockLoading: true

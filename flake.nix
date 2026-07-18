@@ -68,6 +68,7 @@
         boot = import ./tests/boot-test.nix { inherit pkgs self; };
         pipewire = import ./tests/pipewire-test.nix { inherit pkgs self; };
         networking = import ./tests/networking-test.nix { inherit pkgs self; };
+        ipv6 = import ./tests/ipv6-test.nix { inherit pkgs self; };
         bluetooth = import ./tests/bluetooth-test.nix { inherit pkgs self; };
         gpu = import ./tests/gpu-test.nix { inherit pkgs self; };
         hyprland = import ./tests/hyprland-test.nix { inherit pkgs self; };
