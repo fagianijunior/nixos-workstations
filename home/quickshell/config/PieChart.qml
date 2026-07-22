@@ -4,7 +4,6 @@ import QtQuick.Layouts
 Item {
     id: root
     Layout.fillWidth: true
-    Layout.preferredWidth: 80
     implicitHeight: 80
     
     property string label: ""

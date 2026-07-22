@@ -37,6 +37,7 @@ ColumnLayout {
     Item {
         Layout.fillWidth: true
         height: 30
+        clip: true
 
         Canvas {
             id: canvas
@@ -86,12 +87,14 @@ ColumnLayout {
             color: root.color1
             font.pixelSize: 10
             font.bold: true
-            style: Text.Outline           // Activates the border effect
-            styleColor: "black"           // Color of the border outline
+            style: Text.Outline
+            styleColor: "black"
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.leftMargin: 3
             anchors.topMargin: 3
+            anchors.right: parent.horizontalCenter
+            elide: Text.ElideRight
             z: 1
         }
 
@@ -100,12 +103,15 @@ ColumnLayout {
             color: root.color2
             font.pixelSize: 10
             font.bold: true
-            style: Text.Outline           // Activates the border effect
-            styleColor: "black"           // Color of the border outline
+            style: Text.Outline
+            styleColor: "black"
             anchors.right: parent.right
             anchors.top: parent.top
+            anchors.left: parent.horizontalCenter
             anchors.rightMargin: 3
             anchors.topMargin: 3
+            horizontalAlignment: Text.AlignRight
+            elide: Text.ElideLeft
             z: 1
         }
     }

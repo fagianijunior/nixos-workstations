@@ -25,6 +25,8 @@ PanelWindow {
     property bool sensitiveData: false
 
     implicitWidth: 200
+    width: 200
+    exclusiveZone: 200
     color: Qt.rgba(36/255, 39/255, 58/255, 0.7) // Catppuccin Macchiato Base color with transparency
 
     Component.onCompleted: {
@@ -159,6 +161,7 @@ PanelWindow {
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 5
+        clip: true
 
         // HOSTNAME
         Text {
@@ -213,11 +216,13 @@ PanelWindow {
             Layout.fillHeight: true
             clip: true
 
+            contentWidth: availableWidth
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
             ColumnLayout {
                 width: mainScrollView.availableWidth
+                implicitWidth: mainScrollView.availableWidth
                 spacing: 5
 
                 // MONITORES DE SISTEMA

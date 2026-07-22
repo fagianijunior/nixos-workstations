@@ -30,51 +30,69 @@ ColumnLayout {
     }
 
 
-    Canvas {
-        id: canvas
+    Item {
         Layout.fillWidth: true
         height: 30
+        clip: true
 
-    RowLayout {
+        Canvas {
+            id: canvas
+            anchors.fill: parent
 
-        Layout.fillWidth: true
-        Layout.fillHeight: true
+            onPaint: {
+                var ctx = getContext("2d")
+                ctx.clearRect(0, 0, width, height)
 
-        Text { 
+                // borda
+                ctx.strokeStyle = "white"
+                ctx.lineWidth = 1
+                ctx.strokeRect(0, 0, width, height)
+
+                // linha do gráfico
+                ctx.strokeStyle = root.color
+                ctx.lineWidth = 2
+                ctx.beginPath()
+                for (var i = 0; i < history.length; i++) {
+                    var x = (i / (history.length - 1)) * width
+                    var y = height - (history[i] / maxValue) * height
+                    if (i === 0) ctx.moveTo(x, y)
+                    else ctx.lineTo(x, y)
+                }
+                ctx.stroke()
+            }
+        }
+
+        Text {
             text: label
             color: root.labelColor
             font.pixelSize: 12
-            padding: 5
-            Layout.alignment: Qt.AlignLeft
+            font.bold: true
+            style: Text.Outline
+            styleColor: "black"
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.right: parent.horizontalCenter
+            anchors.leftMargin: 5
+            anchors.topMargin: 5
+            elide: Text.ElideRight
+            z: 1
         }
-        Text { 
+
+        Text {
             text: currentValue.toFixed(1) + valueSuffix
             color: root.labelColor
             font.pixelSize: 12
-            Layout.alignment: Qt.AlignRight
-            padding: 5
-        }
-    }
-        onPaint: {
-            var ctx = getContext("2d")
-            ctx.clearRect(0, 0, width, height)
-
-            // borda
-            ctx.strokeStyle = "white"
-            ctx.lineWidth = 1
-            ctx.strokeRect(0, 0, width, height)
-
-            // linha do gráfico
-            ctx.strokeStyle = root.color
-            ctx.lineWidth = 2
-            ctx.beginPath()
-            for (var i = 0; i < history.length; i++) {
-                var x = (i / (history.length - 1)) * width
-                var y = height - (history[i] / maxValue) * height
-                if (i === 0) ctx.moveTo(x, y)
-                else ctx.lineTo(x, y)
-            }
-            ctx.stroke()
+            font.bold: true
+            style: Text.Outline
+            styleColor: "black"
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.left: parent.horizontalCenter
+            anchors.rightMargin: 5
+            anchors.topMargin: 5
+            horizontalAlignment: Text.AlignRight
+            elide: Text.ElideLeft
+            z: 1
         }
     }
 }

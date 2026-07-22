@@ -7,6 +7,8 @@ RowLayout {
     id: root
 
     Layout.fillWidth: true
+    spacing: 2
+    clip: true
 
     Repeater {
         id: diskRepeater
@@ -19,6 +21,7 @@ RowLayout {
             color: model.color
             value: model.usage / 100.0
             Layout.fillWidth: true
+            Layout.maximumWidth: Math.max(40, (root.width - (diskRepeater.count - 1) * root.spacing) / Math.max(1, diskRepeater.count))
         }
     }
 

@@ -19,6 +19,8 @@ ColumnLayout {
         font.bold: true
         color: "#cad3f5"
         Layout.alignment: Qt.AlignLeft
+        Layout.fillWidth: true
+        elide: Text.ElideRight
     }
 
     FileView {
