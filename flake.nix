@@ -15,9 +15,14 @@
   outputs = { self, nixpkgs, home-manager, catppuccin, ... }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+      overlays = [
+        (import ./overlays/kiro.nix)
+      ];
+      pkgs = import nixpkgs {
+        inherit system overlays;
+      };
       pkgsUnfree = import nixpkgs {
-        inherit system;
+        inherit system overlays;
         config.allowUnfree = true;
       };
     in
@@ -26,6 +31,7 @@
         nobita = nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
+            { nixpkgs.overlays = overlays; }
             ./hosts/nobita/default.nix
             catppuccin.nixosModules.catppuccin
             home-manager.nixosModules.home-manager
@@ -42,6 +48,7 @@
         doraemon = nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
+            { nixpkgs.overlays = overlays; }
             ./hosts/doraemon/default.nix
             catppuccin.nixosModules.catppuccin
             home-manager.nixosModules.home-manager
