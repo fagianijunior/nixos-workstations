@@ -5,18 +5,20 @@ let
     mcpServers = {
       fetch = {
         command = "uvx";
-        args = [ "mcp-server-fetch" ];
+        args = [ "--with" "mcp<2" "mcp-server-fetch" ];
+        disabled = "false";
       };
       nixos = {
         command = "uvx";
         args = [ "mcp-nixos" ];
+        disabled = "true";
       };
       "Hyperland MCP Server" = {
         command = "uv";
         args = [
           "run"
           "--with"
-          "mcp[cli]"
+          "mcp[cli]<2"
           "mcp"
           "run"
           "/home/terabytes/Workspace/MCPs/hyprmcp/hyprmcp/server.py"
@@ -24,14 +26,17 @@ let
         env = {
           PYTHONPATH = "/home/terabytes/Workspace/MCPs/hyprmcp";
         };
+        disabled = "true";
       };
       qt-docs = {
         command = "npx";
         args = [ "mcp-remote" "https://qt-docs-mcp.qt.io/mcp" ];
+        disabled = "true";
       };
       taskwarrior = {
         command = "npx";
         args = [ "-y" "mcp-server-taskwarrior" ];
+        disabled = "true";
       };
       github = {
         command = "github-mcp-server";
@@ -39,10 +44,12 @@ let
         env = {
           GITHUB_PERSONAL_ACCESS_TOKEN = "REPLACE_WITH_YOUR_TOKEN";
         };
+        disabled = "true";
       };
       terraform = {
         command = "terraform-mcp-server";
         args = [ "stdio" ];
+        disabled = "true";
       };
       "awslabs.aws-api-mcp-server" = {
         command = "uvx";
@@ -50,6 +57,7 @@ let
         env = {
           AWS_REGION = "us-east-1";
         };
+        disabled = "true";
       };
     };
   };

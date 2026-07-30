@@ -56,7 +56,12 @@
   services.resolved = {
     enable = true;
     settings.Resolve = {
-      DNSSEC = "allow-downgrade";
+      # DNSSEC validation disabled locally — Cloudflare (1.1.1.2) and Quad9 (9.9.9.9)
+      # already perform DNSSEC validation upstream. Local validation with "allow-downgrade"
+      # causes resolution failures when ISP middleboxes strip DNSSEC signatures,
+      # resulting in "no-signature" errors and total DNS loss until service restart.
+      DNSSEC = "no";
+      DNSOverTLS = "opportunistic";
       Domains = [ "~." ];
       FallbackDNS = [ "1.1.1.2" "9.9.9.9" "2606:4700:4700::1112" "2620:fe::fe" ];
     };
