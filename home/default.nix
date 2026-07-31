@@ -189,11 +189,15 @@ in
     '';
 
     functions = {
-      nswitch = {
-        description = "Rebuild NixOS usando o flake do host atual";
+      nixos-rebuild-switch = {
+        description = "Rebuild NixOS usando o flake do host atual e mostra diff com nvd";
         body = ''
           sudo nixos-rebuild switch \
-            --flake ~/Workspace/fagianijunior/dotfiles/#(hostname)
+            --flake .#(hostname)
+          and begin
+            set prev_gen (math (nixos-rebuild list-generations | grep True | string split -f1 ' ') - 1)
+            nvd diff /nix/var/nix/profiles/system-$prev_gen-link /run/current-system
+          end
         '';
       };
 
@@ -731,6 +735,7 @@ in
     python3
     nodejs
     nixpkgs-fmt
+    nvd
     uv
     nixd
     kiro
