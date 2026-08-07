@@ -560,7 +560,7 @@ in
     help_border = { fg = "#494d64" }
     help_item = { fg = "#cad3f5" }
     help_more = { fg = "#6e738d" }
-    '';
+  '';
 
   # Pyprland configuration
   xdg.configFile."pypr/config.toml".source =
@@ -740,6 +740,7 @@ in
     nixd
     kiro
     kiro-cli
+    bun
     github-mcp-server
     gh
     awscli2

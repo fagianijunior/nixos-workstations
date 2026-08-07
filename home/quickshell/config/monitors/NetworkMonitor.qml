@@ -21,7 +21,7 @@ ColumnLayout {
         color2: "#fab387"
         displayLabel1: root.downLabel
         displayLabel2: root.upLabel
-        maxValue: 60000
+        maxValue: 30000
         Layout.fillWidth: true
         Layout.preferredHeight: root.graphHeight
     }
