@@ -214,18 +214,18 @@ in
       };
 
       logitech-change-host = {
-        description = "Troca o host dos dispositivos logitech entre nobita (2) e doraemon (0)";
+        description = "Troca o host dos dispositivos logitech entre nobita (3) e doraemon (1)";
         body = ''
           # Hosts são 0-indexed no solaar CLI:
-          #   0 = doraemon, 2 = nobita
+          #   1 = doraemon, 3 = nobita
           # (conforme: solaar show -> HOSTS INFO feature do LIFT)
           set normalized_hostname (hostname | string lower)
           switch $normalized_hostname
             case "nobita"
-              set target 0
+              set target 1
               set target_name "doraemon"
             case "doraemon"
-              set target 2
+              set target 3
               set target_name "nobita"
             case "*"
               echo "Host desconhecido: $normalized_hostname. Nenhuma alteração feita."
