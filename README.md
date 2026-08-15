@@ -78,11 +78,35 @@ nix flake update
 ## Instalação Fresh
 
 1. Boot pelo NixOS installer USB
-2. Particionar disco: EFI (512MB) + LUKS (restante) + Swap
+2. Particionar disco:
+   - **EFI**: 1024MB (1GB) — systemd-boot + múltiplas gerações NixOS
+   - **LUKS container**: restante do disco (abrange root + swap)
+   - **Swap dentro do LUKS**: arquivo swap em `/swapfile` (criado pós-instalação)
 3. Criar subvolumes Btrfs: `@`, `@home`, `@nix`, `@snapshots`
-4. Montar partições e gerar `hardware-configuration.nix`
-5. Substituir UUIDs nos arquivos `hosts/<host>/hardware-configuration.nix`
+4. Montar partições e gerar `hardware-configuration.nix`:
+   ```bash
+   # Montar LUKS
+   cryptsetup luksOpen /dev/sdX2 nixenc
+   
+   # Montar Btrfs com subvolumes
+   mount -o compress=zstd,subvol=@ /dev/mapper/nixenc /mnt
+   mkdir -p /mnt/{home,nix,.snapshots,boot}
+   mount -o compress=zstd,subvol=@home /dev/mapper/nixenc /mnt/home
+   mount -o compress=zstd,noatime,subvol=@nix /dev/mapper/nixenc /mnt/nix
+   mount -o compress=zstd,subvol=@snapshots /dev/mapper/nixenc /mnt/.snapshots
+   
+   # Montar EFI
+   mount /dev/sdX1 /mnt/boot
+   
+   # Gerar config hardware
+   nixos-generate-config --root /mnt
+   ```
+5. Substituir UUIDs nos arquivos `hosts/<host>/hardware-configuration.nix`:
+   - Localizar UUIDs das partições: `blkid`
+   - Atualizar `boot.initrd.luks.devices.nixenc.device` e `fileSystems."/boot".device`
 6. Executar `nixos-install --flake .#<hostname>`
+
+**Nota**: O swap deve estar dentro do LUKS para Full Disk Encryption consistente. Use `/swapfile` em vez de partição swap separada.
 
 ## Pré-requisitos
 

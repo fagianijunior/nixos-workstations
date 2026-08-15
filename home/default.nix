@@ -675,13 +675,13 @@ in
       }
       {
         label = "suspend";
-        action = "systemctl suspend";
+        action = "ollama ps | awk 'NR>1 {print $1}' | xargs -r ollama stop && systemctl suspend";
         text = "Suspend";
         keybind = "u";
       }
       {
         label = "hibernate";
-        action = "systemctl hibernate";
+        action = "ollama ps | awk 'NR>1 {print $1}' | xargs -r ollama stop && systemctl hibernate";
         text = "Hibernate";
         keybind = "h";
       }
@@ -740,7 +740,17 @@ in
     nixd
     kiro
     kiro-cli
+<<<<<<< Updated upstream
     bun
+||||||| Stash base
+=======
+    (vscode-with-extensions.override {
+      vscode = vscode-fhs;
+      vscodeExtensions = with vscode-extensions; [
+        continue.continue
+      ];
+    })
+>>>>>>> Stashed changes
     github-mcp-server
     gh
     awscli2
