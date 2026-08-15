@@ -214,19 +214,28 @@ in
       };
 
       logitech-change-host = {
-        description = "Troca o host dos dispositivos logitech entre nobita e doraemon";
+        description = "Troca o host dos dispositivos logitech entre nobita (2) e doraemon (0)";
         body = ''
-          set normalized_hostname (echo $hostname | string lower)
+          # Hosts são 0-indexed no solaar CLI:
+          #   0 = doraemon, 2 = nobita
+          # (conforme: solaar show -> HOSTS INFO feature do LIFT)
+          set normalized_hostname (hostname | string lower)
           switch $normalized_hostname
             case "nobita"
-              solaar config "LIFT" change-host "1"  # doraemon
-              solaar config "Keyboard K380" change-host "1" # doraemon
+              set target 0
+              set target_name "doraemon"
             case "doraemon"
-              solaar config "LIFT" change-host "3" # nobita
-              solaar config "Keyboard K380" change-host "3" # nobita
+              set target 2
+              set target_name "nobita"
             case "*"
-              echo "Host desconhecido. Nenhuma alteração feita."
+              echo "Host desconhecido: $normalized_hostname. Nenhuma alteração feita."
+              return 1
           end
+          echo "Alternando dispositivos Logitech para $target_name (host $target)..."
+          solaar config "LIFT" change-host $target
+          and echo "  LIFT -> $target_name" or echo "  LIFT: falhou (dispositivo offline?)"
+          solaar config "Keyboard K380" change-host $target
+          and echo "  K380 -> $target_name" or echo "  K380: falhou (dispositivo offline?)"
         '';
       };
 
