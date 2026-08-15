@@ -740,17 +740,13 @@ in
     nixd
     kiro
     kiro-cli
-<<<<<<< Updated upstream
     bun
-||||||| Stash base
-=======
     (vscode-with-extensions.override {
       vscode = vscode-fhs;
       vscodeExtensions = with vscode-extensions; [
         continue.continue
       ];
     })
->>>>>>> Stashed changes
     github-mcp-server
     gh
     awscli2
