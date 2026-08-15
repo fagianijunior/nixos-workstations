@@ -255,6 +255,9 @@ hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + SHIFT + Z", hl.dsp.exec_cmd("pypr zoom"))
 hl.bind(mainMod .. " + CTRL + SPACE", hl.dsp.exec_cmd("pypr toggle term"))
 
+-- Logitech host switch (K380 + Lift): Nobita (3) <-> Doraemon (1)
+hl.bind(mainMod .. " + SHIFT + H", hl.dsp.exec_cmd("fish -c logitech-change-host"))
+
 -- Power
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("hyprshutdown"))
