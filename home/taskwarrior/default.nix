@@ -1,29 +1,33 @@
 { config, pkgs, ... }:
 
-let
-  # Python with AI dependencies for taskwarrior
-  pythonWithAI = pkgs.python3.withPackages (
-    ps: with ps; [
-      requests
-    ]
-  );
-in
 {
   imports = [
     ./systemd-services.nix
     ./sync-config.nix
   ];
 
-  # Dependências para IA
+  # Dependências
   home.packages = with pkgs; [
     taskwarrior3
     taskwarrior-tui
+    timewarrior
     python3
-    python3Packages.requests
   ];
 
-  # Create a symlink to python with AI packages for development
-  home.file.".local/bin/python3-ai".source = "${pythonWithAI}/bin/python3";
+  # Hook Timewarrior: integração automática task start/stop → timew
+  home.file.".local/share/task/hooks/on-modify.timewarrior" = {
+    source     = "${pkgs.timewarrior}/share/doc/timew/ext/on-modify.timewarrior";
+    executable = true;
+  };
+
+  # Garantir que o diretório de dados do Timewarrior exista
+  home.file.".local/share/timewarrior/.keep".text = "";
+
+  # Script Python de métricas de tempo para o QuickShell
+  xdg.configFile."task/timew-summary.py" = {
+    source     = ./timew-summary.py;
+    executable = true;
+  };
 
   # Taskwarrior configuration
   xdg.configFile."task/taskrc".text = ''
@@ -107,9 +111,6 @@ in
     uda.client.label=Client
     uda.client.values=
 
-    uda.totalactivetime.type=numeric
-    uda.totalactivetime.label=Total Active Time
-
     # Urgency coefficients
     urgency.user.project.Inbox.coefficient=15.0
     urgency.user.project.Work.coefficient=10.0
@@ -161,23 +162,9 @@ in
   # Create data directory
   home.file.".local/share/task/.keep".text = "";
 
-  # Scripts de IA
-  home.file.".config/task/ai-assistant.py".source = ./ai-assistant.py;
-  home.file.".config/task/daily-ai-report.sh".source = ./daily-ai-report.sh;
-
-  # Aliases para facilitar o uso
-  home.file.".config/fish/conf.d/taskwarrior-ai.fish".text = ''
-    # Aliases para Taskwarrior com IA
-    alias tai="~/.local/bin/python3-ai ~/.config/task/ai-assistant.py"
-    alias task-analyze="tai analyze"
-    alias task-plan="tai plan"
-    alias task-improve="tai improve"
-    alias task-report="~/.config/task/daily-ai-report.sh"
-
-    # Função para análise rápida
-    function task-ai-quick
-        echo "🤖 Análise rápida das tarefas:"
-        tai analyze | head -20
-    end
+  # Aliases fish para taskwarrior e timewarrior
+  home.file.".config/fish/conf.d/taskwarrior.fish".text = ''
+    # Alias para resumo de tempo do dia
+    alias timew-day="python3 ~/.config/task/timew-summary.py"
   '';
 }

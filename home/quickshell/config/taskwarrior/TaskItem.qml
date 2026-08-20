@@ -31,25 +31,8 @@ Rectangle {
     // Compositor detection
     property bool isHyprland: false
     
-    // ---- Timer Properties ----
-    
-    // Accumulated seconds from previous work sessions (stored in UDA)
-    property int accumulatedSeconds: {
-        if (!task || !task.totalactivetime) return 0
-        var val = parseInt(task.totalactivetime)
-        return isNaN(val) ? 0 : val
-    }
-    
-    // Total elapsed seconds (accumulated + current session), updated by timer tick
-    // Not a binding — managed imperatively by timer tick, pause logic, and onTaskChanged
-    property int elapsedSeconds: 0
-    
-    // Whether the timer is actively running (task is active)
-    property bool timerRunning: isTaskActive(task)
-    
-    // Disables pause button during command execution
-    property bool pauseInProgress: false
-    
+    // ---- Timer Properties ---- (removed - tracking now handled by Timewarrior)
+
     // ---- Visual Properties ----
     
     color: getTaskBackgroundColor(task)  // Dynamic color based on status
@@ -222,9 +205,6 @@ Rectangle {
     }
     
     // ---- Process Components ----
-    
-    // Non-blocking terminal launch for task detail navigation
-    // Validates: Requirements 5.1, 5.2, 5.3, 5.4, 10.2
     Process {
         id: terminalProcess
         
@@ -243,71 +223,8 @@ Rectangle {
         }
     }
     
-    // ---- Timer Component ----
-    
-    // 1-second tick timer that updates elapsed display while task is active
-    Timer {
-        id: elapsedTimer
-        interval: 1000
-        running: taskItem.timerRunning && !taskItem.pauseInProgress
-        repeat: true
-        onTriggered: taskItem.updateElapsed()
-    }
-    
-    // Update elapsedSeconds property (called every tick)
-    function updateElapsed() {
-        elapsedSeconds = accumulatedSeconds + currentSessionSeconds()
-    }
-    
-    // Parse Taskwarrior timestamp "YYYYMMDDTHHmmSSZ" → epoch milliseconds
-    function parseTaskwarriorTimestamp(ts) {
-        if (!ts || ts.length < 15) return 0
-        var year   = parseInt(ts.substring(0, 4))
-        var month  = parseInt(ts.substring(4, 6)) - 1
-        var day    = parseInt(ts.substring(6, 8))
-        var hour   = parseInt(ts.substring(9, 11))
-        var minute = parseInt(ts.substring(11, 13))
-        var second = parseInt(ts.substring(13, 15))
-        if (isNaN(year) || isNaN(month) || isNaN(day) ||
-            isNaN(hour) || isNaN(minute) || isNaN(second)) return 0
-        return Date.UTC(year, month, day, hour, minute, second)
-    }
+    // ---- Timer Component ---- (removed - Timewarrior tracks time via hook)
 
-    // Calculate current session seconds from start timestamp
-    function currentSessionSeconds() {
-        if (!task || !task.start || task.start === "") return 0
-        var startMs = parseTaskwarriorTimestamp(task.start)
-        if (startMs <= 0) return 0
-        var session = Math.floor((Date.now() - startMs) / 1000)
-        return session < 0 ? 0 : session
-    }
-
-    // Format seconds as HH:MM:SS with zero-padding
-    function formatTime(totalSeconds) {
-        if (totalSeconds < 0) totalSeconds = 0
-        var hours   = Math.floor(totalSeconds / 3600)
-        var minutes = Math.floor((totalSeconds % 3600) / 60)
-        var seconds = totalSeconds % 60
-
-        var hh = hours.toString()
-        if (hh.length < 2) hh = "0" + hh
-        var mm = minutes.toString()
-        if (mm.length < 2) mm = "0" + mm
-        var ss = seconds.toString()
-        if (ss.length < 2) ss = "0" + ss
-
-        return hh + ":" + mm + ":" + ss
-    }
-
-    // Get the timer button state: "start", "pause", "resume", or "hidden"
-    function timerButtonState() {
-        if (!task) return "hidden"
-        if (task.status === "completed" || task.status === "deleted") return "hidden"
-        if (isTaskActive(task)) return "pause"
-        if (accumulatedSeconds > 0) return "resume"
-        return "start"
-    }
-    
     // ---- Layout ----
     
     RowLayout {
@@ -487,11 +404,10 @@ Rectangle {
                     font.pixelSize: 8  // Reduced from 9
                 }
                 
-                // Timer control button (▶ start/resume or ⏸ pause)
-                // Validates: Requirements 7.1, 7.2, 7.3, 7.4, 7.5, 7.6
+                // Timer control button (▶ start / ⏹ stop)
                 Rectangle {
                     id: timerButton
-                    visible: taskItem.timerButtonState() !== "hidden"
+                    visible: taskItem.task && taskItem.task.status !== "completed" && taskItem.task.status !== "deleted"
                     Layout.preferredWidth: 24
                     Layout.preferredHeight: 24
                     radius: 12
@@ -499,7 +415,7 @@ Rectangle {
                     
                     Text {
                         anchors.centerIn: parent
-                        text: taskItem.timerButtonState() === "pause" ? "⏸" : "▶"
+                        text: isTaskActive(taskItem.task) ? "⏹" : "▶"
                         color: "#a6e3a1"
                         font.pixelSize: 10
                     }
@@ -509,30 +425,15 @@ Rectangle {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        enabled: !taskItem.pauseInProgress
                         
                         onClicked: {
-                            var state = taskItem.timerButtonState()
-                            if (state === "start" || state === "resume") {
+                            if (isTaskActive(taskItem.task)) {
+                                taskItem.taskManager.stopTask(taskItem.task.uuid)
+                            } else {
                                 taskItem.taskManager.startTask(taskItem.task.uuid)
-                            } else if (state === "pause") {
-                                taskItem.pauseInProgress = true
-                                taskItem.updateElapsed()
-                                taskItem.taskManager.pauseTask(taskItem.task.uuid, taskItem.elapsedSeconds)
                             }
                         }
                     }
-                }
-                
-                // Timer display text (HH:MM:SS)
-                // Validates: Requirements 8.1, 8.2, 8.3, 8.4
-                Text {
-                    id: timerDisplay
-                    visible: taskItem.timerRunning || taskItem.accumulatedSeconds > 0
-                    text: taskItem.formatTime(taskItem.elapsedSeconds)
-                    color: "#a6e3a1"
-                    font.pixelSize: 9
-                    font.family: "monospace"
                 }
                 
                 // Spacer
@@ -545,17 +446,9 @@ Rectangle {
     
     // ---- Signal Handlers ----
     
-    // Initialize Hyprland detection and elapsed time on component load
+    // Initialize Hyprland detection on component load
     Component.onCompleted: {
         detectHyprland()
-        updateElapsed()
-    }
-    
-    // When task data refreshes, recalculate elapsed (unless pause is in progress)
-    onTaskChanged: {
-        if (!pauseInProgress) {
-            updateElapsed()
-        }
     }
     
     // Listen for task modification results to revert optimistic updates if needed
@@ -568,26 +461,6 @@ Rectangle {
                 console.warn("Task modification failed, reverting UI state")
                 taskItem.currentStatus = taskItem.previousStatus
             }
-        }
-    }
-    
-    // Listen for timer operation results to reset pause state
-    // Validates: Requirements 9.1, 9.2, 9.3, 9.4
-    Connections {
-        target: taskItem.taskManager
-        
-        function onTimerOperationCompleted(uuid, success, operation) {
-            if (taskItem.task && taskItem.task.uuid === uuid) {
-                taskItem.pauseInProgress = false
-                // After pause completes, recalculate from current task data
-                taskItem.updateElapsed()
-            }
-        }
-        
-        function onTimerError(message) {
-            taskItem.pauseInProgress = false
-            // Re-enable timer calculation
-            taskItem.updateElapsed()
         }
     }
 }

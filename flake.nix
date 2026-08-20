@@ -85,6 +85,7 @@
         home-manager = import ./tests/home-manager-test.nix { inherit pkgs self; };
         neovim = import ./tests/neovim-test.nix { pkgs = pkgsUnfree; inherit self; };
         devenv-direnv = import ./tests/devenv-direnv-test.nix { inherit pkgs self; };
+        taskwarrior-timewarrior = import ./tests/taskwarrior-timewarrior-test.nix { inherit pkgs self; };
       };
     };
 }

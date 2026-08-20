@@ -94,9 +94,6 @@ in
     uda.client.label=Client
     uda.client.values=
 
-    uda.totalactivetime.type=numeric
-    uda.totalactivetime.label=Total Active Time
-
     # Urgency coefficients
     urgency.user.project.Inbox.coefficient=15.0
     urgency.user.project.Work.coefficient=10.0

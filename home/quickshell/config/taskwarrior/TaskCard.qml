@@ -13,10 +13,8 @@ Rectangle {
     // Internal property to hold deserialized tasks array
     property var taskArray: []
     
-    // Header timer properties
-    property int headerElapsedSeconds: 0
+    // Header timer properties (removed - Timewarrior now tracks time)
     property bool hasActiveTaskInCard: hasActiveTask()
-    property bool hasAnyTimeInCard: headerElapsedSeconds > 0
     
     // Signal to notify parent when expansion state changes
     signal expansionChanged(bool expanded)
@@ -104,68 +102,11 @@ Rectangle {
         return false
     }
     
-    // Parse Taskwarrior timestamp "YYYYMMDDTHHmmSSZ" → epoch milliseconds
-    function parseTaskwarriorTimestamp(ts) {
-        if (!ts || ts.length < 15) return 0
-        var year   = parseInt(ts.substring(0, 4))
-        var month  = parseInt(ts.substring(4, 6)) - 1
-        var day    = parseInt(ts.substring(6, 8))
-        var hour   = parseInt(ts.substring(9, 11))
-        var minute = parseInt(ts.substring(11, 13))
-        var second = parseInt(ts.substring(13, 15))
-        if (isNaN(year) || isNaN(month) || isNaN(day) ||
-            isNaN(hour) || isNaN(minute) || isNaN(second)) return 0
-        return Date.UTC(year, month, day, hour, minute, second)
-    }
+    // (formatTime and updateHeaderElapsed removed - Timewarrior handles time tracking)
     
-    // Format seconds as HH:MM:SS
-    function formatTime(totalSeconds) {
-        if (totalSeconds < 0) totalSeconds = 0
-        var hours   = Math.floor(totalSeconds / 3600)
-        var minutes = Math.floor((totalSeconds % 3600) / 60)
-        var seconds = totalSeconds % 60
-        var hh = hours.toString(); if (hh.length < 2) hh = "0" + hh
-        var mm = minutes.toString(); if (mm.length < 2) mm = "0" + mm
-        var ss = seconds.toString(); if (ss.length < 2) ss = "0" + ss
-        return hh + ":" + mm + ":" + ss
-    }
-    
-    // Calculate total elapsed for ALL tasks in this card (sum of totalactivetime + active session)
-    function updateHeaderElapsed() {
-        var total = 0
-        for (var i = 0; i < taskArray.length; i++) {
-            var t = taskArray[i]
-            var accumulated = 0
-            if (t.totalactivetime) {
-                accumulated = parseInt(t.totalactivetime)
-                if (isNaN(accumulated)) accumulated = 0
-            }
-            total += accumulated
-            // If this task is active, add the current session time
-            if (t.start !== undefined && t.start !== "") {
-                var startMs = parseTaskwarriorTimestamp(t.start)
-                if (startMs > 0) {
-                    var session = Math.floor((Date.now() - startMs) / 1000)
-                    if (session < 0) session = 0
-                    total += session
-                }
-            }
-        }
-        headerElapsedSeconds = total
-    }
-    
-    // Recalculate header elapsed when task data changes
+    // Recalculate active state when task data changes
     onTaskArrayChanged: {
-        updateHeaderElapsed()
-    }
-    
-    // Header timer — ticks every 1 second while an active task exists in this card
-    Timer {
-        id: headerTimer
-        interval: 1000
-        running: taskCard.hasActiveTaskInCard
-        repeat: true
-        onTriggered: taskCard.updateHeaderElapsed()
+        hasActiveTaskInCard = hasActiveTask()
     }
     
     // Content layout
@@ -255,15 +196,6 @@ Rectangle {
                     text: "▶"
                     color: "#89b4fa"
                     font.pixelSize: 8
-                }
-                
-                // Header timer display (total time for all tasks in card)
-                Text {
-                    visible: taskCard.hasAnyTimeInCard
-                    text: taskCard.formatTime(taskCard.headerElapsedSeconds)
-                    color: "#a6e3a1"
-                    font.pixelSize: 9
-                    font.family: "monospace"
                 }
                 
                 // Task count badge

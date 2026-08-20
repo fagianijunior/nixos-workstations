@@ -284,12 +284,85 @@ hl.bind(
 	)
 )
 
--- Switch workspaces with mainMod + [0-9]
--- Move active window to a workspace with mainMod + SHIFT + [0-9]
-for i = 1, 10 do
-	local key = i % 10
-	hl.bind(mainMod .. " + " .. key, hl.dsp.focus({ workspace = i }))
-	hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
+-- Paired workspaces: eDP-1 gets 1-5, HDMI-A-1 gets 6-10
+-- When pressing mainMod+N, both monitors switch in sync (N and N+5)
+-- When only one monitor is connected, all workspaces work on it normally
+
+local primary_monitor = "eDP-1"
+local secondary_monitor = "HDMI-A-1"
+
+-- Bind workspaces to monitors (only effective when both monitors are connected)
+for i = 1, 5 do
+	hl.workspace_rule({ workspace = tostring(i), monitor = primary_monitor })
+	hl.workspace_rule({ workspace = tostring(i + 5), monitor = secondary_monitor })
+end
+
+-- Helper: check if secondary monitor is connected
+local function has_dual_monitors()
+	local monitors = hl.get_monitors()
+	return #monitors > 1
+end
+
+-- Helper: get paired workspace (1-5 pairs with 6-10)
+local function get_pair(ws)
+	if ws <= 5 then return ws + 5 end
+	return ws - 5
+end
+
+-- Helper: focus a workspace on a specific monitor without triggering back_and_forth
+local function focus_workspace_on_monitor(ws, monitor_name)
+	local monitors = hl.get_monitors()
+	for _, mon in ipairs(monitors) do
+		if mon.name == monitor_name then
+			-- Only dispatch if the workspace isn't already active on that monitor
+			if mon.activeWorkspace.id ~= ws then
+				hl.dispatch(hl.dsp.focus({ workspace = ws }))
+			end
+			return
+		end
+	end
+	-- Monitor not found, just focus the workspace
+	hl.dispatch(hl.dsp.focus({ workspace = ws }))
+end
+
+-- Switch paired workspaces with mainMod + [1-5]
+for i = 1, 5 do
+	local key = tostring(i)
+	hl.bind(mainMod .. " + " .. key, function()
+		if has_dual_monitors() then
+			focus_workspace_on_monitor(i + 5, secondary_monitor)
+			focus_workspace_on_monitor(i, primary_monitor)
+		else
+			hl.dispatch(hl.dsp.focus({ workspace = i }))
+		end
+	end)
+	hl.bind(mainMod .. " + SHIFT + " .. key, function()
+		hl.dispatch(hl.dsp.window.move({ workspace = i }))
+		if has_dual_monitors() then
+			focus_workspace_on_monitor(i + 5, secondary_monitor)
+			focus_workspace_on_monitor(i, primary_monitor)
+		end
+	end)
+end
+
+-- Switch paired workspaces with mainMod + [6-0] (6,7,8,9,0)
+for i = 6, 10 do
+	local key = tostring(i % 10)
+	hl.bind(mainMod .. " + " .. key, function()
+		if has_dual_monitors() then
+			focus_workspace_on_monitor(i - 5, primary_monitor)
+			focus_workspace_on_monitor(i, secondary_monitor)
+		else
+			hl.dispatch(hl.dsp.focus({ workspace = i }))
+		end
+	end)
+	hl.bind(mainMod .. " + SHIFT + " .. key, function()
+		hl.dispatch(hl.dsp.window.move({ workspace = i }))
+		if has_dual_monitors() then
+			focus_workspace_on_monitor(i - 5, primary_monitor)
+			focus_workspace_on_monitor(i, secondary_monitor)
+		end
+	end)
 end
 
 -- Special workspace (scratchpad)

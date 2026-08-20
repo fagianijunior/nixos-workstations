@@ -271,6 +271,13 @@ PanelWindow {
                     visible: !rootPanel.sensitiveData
                 }
 
+                // TIME TRACKING PANEL
+                TimePanel {
+                    id: timePanel
+                    Layout.fillWidth: true
+                    visible: !rootPanel.sensitiveData
+                }
+
                 // POMODORO
                 PomodoroPanel {
                     id: pomodoroPanel

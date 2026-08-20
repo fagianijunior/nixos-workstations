@@ -461,3 +461,92 @@
 **Context**: CONSTRUCTION — Build and Test completo. Todos os AI-DLC stages finalizados para QuickShell Pomodoro.
 
 ---
+
+## Taskwarrior + Timewarrior Reformulation — New Request
+**Timestamp**: 2026-08-20T00:00:00Z
+**User Input**: "Usando AI-DLC preciso reformular o taskwarrior e o funcionamento como as tasks são exibidas no quickshell. A intenção é eu conseguir mensurar quanstas horas eu gasto por dia em cada tarrefa, quanto tempo eu gasto no trabalho e em tarrefas pessoais. Li sobre o timewarrior que talvez nos ajude nessa função. é uma boa opção?"
+**AI Response**: "Iniciando workflow AI-DLC. Avaliando Timewarrior como opção de rastreamento. Iniciando Workspace Detection."
+**Context**: INCEPTION - Workspace Detection para reformulação do Taskwarrior + QuickShell com rastreamento de horas.
+
+---
+
+## Taskwarrior + Timewarrior — Requirements Questions Created
+**Timestamp**: 2026-08-20T00:05:00Z
+**AI Response**: "Criado taskwarrior-timewarrior-questions.md com 10 perguntas cobrindo: integração Timewarrior (hook vs manual), layout do QuickShell, métricas desejadas, separação work/personal, destino do totalactivetime UDA, cronômetro em tempo real, fonte de dados QML, frequência de atualização, histórico (dia/semana), e extension opt-in (Security Baseline)."
+**Context**: INCEPTION - Requirements Analysis, Step 6 (Generate Clarifying Questions). Aguardando respostas do usuário.
+
+---
+
+## Taskwarrior + Timewarrior — Answers Received & Requirements Generated
+**Timestamp**: 2026-08-20T00:10:00Z
+**User Input**: "respondido" + esclarecimento sobre Q4: "Pode alterar a Q4 para A. Se project: é para ser utilizado com o valor Work ou Personal, vanho usando esse campo errado a muito tempo, eu setava o nome no projeto Site, Blog, Maestro em project:, vou ter que mudar esse habito."
+**AI Response**: "Q4 corrigida para A. Esclarecimento fornecido: project: pode ser qualquer nome (Blog, Maestro, Site), a categorização work/personal deve usar tags +work/+personal. Documento de requisitos gerado em taskwarrior-timewarrior-requirements.md. Q1=A (hook auto), Q2=B (reformular painel), Q3=C (total+ativo+breakdown), Q4=A (contextos existentes via tags), Q5=B (migrar para timew), Q6=C (remover cronômetros), Q7=B (script Python), Q8=B (60s), Q9=B (semana), Q10=A (Security Baseline). 10 RF, 5 RNF. 9 arquivos a criar/modificar."
+**Context**: INCEPTION - Requirements Analysis complete. Aguardando aprovação do usuário.
+
+---
+
+## Taskwarrior + Timewarrior — Requirements Approved
+**Timestamp**: 2026-08-20T00:15:00Z
+**User Input**: "Aprovado"
+**AI Response**: "Requisitos aprovados. Prosseguindo para Workflow Planning."
+**Context**: INCEPTION - Requirements Analysis aprovado. Movendo para Workflow Planning.
+
+---
+
+## Taskwarrior + Timewarrior — Workflow Planning Complete
+**Timestamp**: 2026-08-20T00:18:00Z
+**AI Response**: "Plano de execução criado em taskwarrior-timewarrior-execution-plan.md. Workflow: skip todos os stages intermediários (sem business logic, sem infra nova), direto para Code Generation → Build and Test. Risco: Médio (reformulação QML + hook path no Nix). 9 arquivos: 3 novos + 6 modificados. Aguardando aprovação antes da CONSTRUCTION."
+**Context**: INCEPTION - Workflow Planning completo. Aguardando aprovação do usuário.
+
+---
+
+## Taskwarrior + Timewarrior — Workflow Planning Approved
+**Timestamp**: 2026-08-20T00:20:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "Plano aprovado. Prosseguindo para Code Generation Part 1 (Planning)."
+**Context**: INCEPTION - Workflow Planning aprovado. Iniciando CONSTRUCTION - Code Generation.
+
+---
+
+## Taskwarrior + Timewarrior — Code Generation Part 1 (Planning)
+**Timestamp**: 2026-08-20T00:25:00Z
+**AI Response**: "Plano de code generation criado em taskwarrior-timewarrior-code-generation-plan.md. 10 passos. Hook verificado: ${pkgs.timewarrior}/share/doc/timew/ext/on-modify.timewarrior (confirmado no store Nix). Pacote timewarrior 1.10.0 disponível em nixpkgs-unstable. 3 arquivos novos + 6 modificados. Aguardando aprovação do usuário."
+**Context**: CONSTRUCTION - Code Generation Part 1 (Planning) completo. Aguardando aprovação.
+
+---
+
+## Taskwarrior + Timewarrior — Code Generation Part 1 Approved
+**Timestamp**: 2026-08-20T00:30:00Z
+**User Input**: "Continue"
+**AI Response**: "Plano aprovado. Iniciando Part 2 (Generation)."
+**Context**: CONSTRUCTION - Code Generation Part 1 aprovado. Iniciando Part 2.
+
+---
+
+## Taskwarrior + Timewarrior — Code Generation Part 2 Complete
+**Timestamp**: 2026-08-20T01:00:00Z
+**Build Status**: nix flake check --no-build → zero erros ✅
+**Files Created**:
+- home/taskwarrior/timew-summary.py (novo)
+- home/quickshell/config/taskwarrior/TimeDataManager.qml (novo)
+- tests/taskwarrior-timewarrior-test.nix (novo)
+**Files Modified**:
+- home/quickshell/config/taskwarrior/TaskPanel.qml (reformulado)
+- home/quickshell/config/taskwarrior/TaskManager.qml (timerProcess removido)
+- home/quickshell/config/taskwarrior/TaskItem.qml (cronômetros removidos)
+- home/quickshell/config/taskwarrior/TaskCard.qml (headerTimer removido)
+- home/taskwarrior/default.nix (timewarrior + hook + timew-summary.py)
+- home/taskwarrior/sync-config.nix (totalactivetime UDA removido)
+- flake.nix (teste adicionado ao checks)
+**AI Response**: "Code generation concluído. Todos os 10 passos executados. nix flake check --no-build passa com zero erros. Apresentando completion message."
+**Context**: CONSTRUCTION - Code Generation Part 2 completo.
+
+---
+
+## Taskwarrior + Timewarrior — Correção: Lista de Tasks Restaurada
+**Timestamp**: 2026-08-20T01:30:00Z
+**User Input**: "Bem. Foi removido a lista de tarrefas, subistituido pelo Tempo, mas, eu preciso ver a lista das tarrefas, o que podia ter removido é a contagem de tempo que existia nas tarrefas."
+**AI Response**: "Correção aplicada sem novo ciclo de requisitos. TaskPanel.qml restaurado com a lista de tasks original (sem cronômetros). Painel de tempo movido para TimePanel.qml (novo arquivo). shell.qml atualizado com TimePanel acima do TaskPanel. nix flake check --no-build: zero erros."
+**Context**: CONSTRUCTION - Correção pós Code Generation. Ambiguidade na Q2 identificada e resolvida.
+
+---

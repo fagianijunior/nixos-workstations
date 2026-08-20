@@ -14,25 +14,21 @@ Rectangle {
     // Property to expose TaskManager to delegates
     property alias taskManagerRef: taskManager
     
-    // ---- Data Layer Components (Task 8.2) ----
+    // ---- Data Layer Components ----
     
-    // TaskManager - Handles Taskwarrior command execution and data management
     TaskManager {
         id: taskManager
         refreshInterval: 7000
         useFileWatcher: true
         
-        // Signal: tasksUpdated - Rebuild UI model when tasks are refreshed
         onTasksUpdated: {
             rebuildTaskCardModel()
         }
         
-        // Signal: errorOccurred - Log error messages
         onErrorOccurred: function(message) {
             console.error("TaskManager error:", message)
         }
         
-        // Signal: taskModified - Handle task modification results
         onTaskModified: function(uuid, success) {
             if (success) {
                 console.log("Task modified successfully:", uuid)
@@ -42,14 +38,12 @@ Rectangle {
         }
     }
     
-    // DataWatcher - Monitors ~/.task directory for changes
     DataWatcher {
         id: dataWatcher
         taskDataPath: Quickshell.env("HOME") + "/.task"
         enabled: true
         pollingInterval: taskManager.refreshInterval
         
-        // KEY CONNECTION: Wire dataChanged signal to TaskManager.refreshTasks()
         onDataChanged: {
             console.log("Data change detected, refreshing tasks...")
             taskManager.refreshTasks()
@@ -60,24 +54,22 @@ Rectangle {
     ColumnLayout {
         id: innerLayout
         anchors.fill: parent
-        anchors.margins: 0  // Reduced from 16
-        spacing: 2  // Reduced from 12
+        anchors.margins: 0
+        spacing: 2
         
         // Header section
         RowLayout {
             Layout.fillWidth: true
-            spacing: 2  // Reduced from 12
+            spacing: 2
             
-            // Title
             Text {
                 text: "Tasks"
-                color: "#cad3f5"  // Text
+                color: "#cad3f5"
                 font.pixelSize: Math.max(14, Math.min(18, rootPanel.width * 0.07))
                 font.bold: true
                 Layout.fillWidth: true
             }
 
-            // Loading/error/status text
             Text {
                 id: statusText
                 text: {
@@ -89,13 +81,12 @@ Rectangle {
                         return ""
                     }
                 }
-                color: taskManager.errorMessage !== "" ? "#f38ba8" : "#a6adc8"  // Red for errors, Subtext for normal
-                font.pixelSize: 9  // Reduced from 12
+                color: taskManager.errorMessage !== "" ? "#f38ba8" : "#a6adc8"
+                font.pixelSize: 9
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 maximumLineCount: 1
                 
-                // Tooltip for truncated error messages
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
@@ -133,7 +124,6 @@ Rectangle {
                 }
             }
             
-            // Task count indicator (shown when loaded)
             Text {
                 id: taskCountText
                 text: {
@@ -147,20 +137,18 @@ Rectangle {
                     totalTasks += generalCount
                     return totalTasks > 0 ? totalTasks + " tasks" : ""
                 }
-                color: "#89b4fa"  // Blue
-                font.pixelSize: 9  // Reduced from 12
+                color: "#89b4fa"
+                font.pixelSize: 9
                 font.bold: true
                 visible: text !== ""
             }
             
-            // Manual refresh button
             Button {
                 id: refreshButton
                 text: "↻"
                 implicitWidth: 24
                 implicitHeight: 24
                 onClicked: {
-                    // Connected to TaskManager.refreshTasks() (Task 8.2)
                     taskManager.refreshTasks()
                 }
                 contentItem: Text {
@@ -172,8 +160,8 @@ Rectangle {
                 }
                 
                 background: Rectangle {
-                    color: parent.pressed ? "#585b70" : "#313244" // Surface1 : Surface0
-                    border.color: "#6c7086" // Surface2
+                    color: parent.pressed ? "#585b70" : "#313244"
+                    border.color: "#6c7086"
                     border.width: 1
                     radius: 5
                 }
@@ -187,26 +175,22 @@ Rectangle {
             Layout.preferredHeight: contentHeight > 0 ? contentHeight : 50
             interactive: false
             spacing: 5
-            bottomMargin: 8  // Add padding at the bottom
+            bottomMargin: 8
             
-            // Placeholder model - will be populated from TaskManager in Task 8.2
             model: ListModel {
                 id: taskCardModel
             }
             
-            // Delegate will use TaskCard component
             delegate: TaskCard {
                 id: cardDelegate
                 width: taskListView.width
                 clientName: model.clientName
                 tasks: model.tasks
-                taskManager: taskPanel.taskManagerRef  // Pass TaskManager reference via property alias
+                taskManager: taskPanel.taskManagerRef
                 
-                // Handle expansion - collapse other cards (Task 8.5)
                 onExpansionChanged: function(expanded) {
                     if (expanded) {
                         console.log("Card expanded:", clientName)
-                        // Collapse all other cards (single-focus behavior)
                         collapseOtherCards(cardDelegate)
                     }
                 }
@@ -214,21 +198,15 @@ Rectangle {
         }
     }
     
-    // ---- Helper Functions (Task 8.2, 8.3, 8.5) ----
-    
-    // Collapse all cards except the specified one (Task 8.5)
     function collapseOtherCards(expandedCard) {
-        // Iterate through all items in the ListView
         for (let i = 0; i < taskListView.count; i++) {
             const item = taskListView.itemAtIndex(i)
             if (item && item !== expandedCard) {
-                // Collapse this card
                 item.isExpanded = false
             }
         }
     }
     
-    // Rebuild task card model from TaskManager data
     function rebuildTaskCardModel() {
         taskCardModel.clear()
         
@@ -236,29 +214,26 @@ Rectangle {
         console.log("tasksByClient:", JSON.stringify(Object.keys(taskManager.tasksByClient)))
         console.log("generalTasks count:", taskManager.generalTasks.length)
         
-        // Add client-specific cards
         for (const client in taskManager.tasksByClient) {
             const tasks = taskManager.tasksByClient[client]
             console.log("Adding card for client:", client, "with", tasks.length, "tasks")
             taskCardModel.append({
                 clientName: client,
-                tasks: JSON.stringify(tasks)  // Serialize as JSON string
+                tasks: JSON.stringify(tasks)
             })
         }
         
-        // Add general card if there are tasks without client
         if (taskManager.generalTasks.length > 0) {
             console.log("Adding general card with", taskManager.generalTasks.length, "tasks")
             taskCardModel.append({
                 clientName: "General",
-                tasks: JSON.stringify(taskManager.generalTasks)  // Serialize as JSON string
+                tasks: JSON.stringify(taskManager.generalTasks)
             })
         }
         
         console.log("Task card model rebuilt:", taskCardModel.count, "cards")
     }
     
-    // Initial data load on component completion
     Component.onCompleted: {
         console.log("TaskPanel initialized, loading tasks...")
         taskManager.refreshTasks()

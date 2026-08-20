@@ -45,11 +45,7 @@ Item {
     // @param message: Error description
     signal errorOccurred(string message)
     
-    // Emitted when a start/stop/modify-time operation completes
-    signal timerOperationCompleted(string uuid, bool success, string operation)
-    
-    // Emitted when a timer error occurs with a display message
-    signal timerError(string message)
+
     
     // ---- Process Components ----
     
@@ -119,110 +115,7 @@ Item {
         }
     }
     
-    // ---- Timer Process for start/stop/modify-time commands ----
-    // Validates: Requirements 1.5, 2.4, 2.5, 5.1
-    
-    Process {
-        id: timerProcess
-        command: []
-        running: false
-        
-        property string operatingUuid: ""
-        property string operation: "" // "start", "stop", "modify-time", "auto-stop", "auto-modify-time"
-        property int pendingElapsedSeconds: 0
-        property string pendingStartUuid: "" // UUID to start after auto-stop completes
-        
-        stdout: StdioCollector {
-            id: timerStdout
-            onStreamFinished: {
-                if (timerProcess.operation === "stop") {
-                    // Stop succeeded — now persist accumulated time
-                    timerProcess.operation = "modify-time"
-                    timerProcess.command = ["task", "rc.confirmation:off",
-                        timerProcess.operatingUuid, "modify",
-                        "totalactivetime:" + timerProcess.pendingElapsedSeconds]
-                    timerProcess.running = true
-                } else if (timerProcess.operation === "modify-time") {
-                    // Full pause sequence complete
-                    taskManager.timerOperationCompleted(timerProcess.operatingUuid, true, "pause")
-                    taskManager.refreshTasks()
-                } else if (timerProcess.operation === "start") {
-                    taskManager.timerOperationCompleted(timerProcess.operatingUuid, true, "start")
-                    taskManager.refreshTasks()
-                } else if (timerProcess.operation === "auto-stop") {
-                    // Auto-stop succeeded — now persist accumulated time for the stopped task
-                    timerProcess.operation = "auto-modify-time"
-                    timerProcess.command = ["task", "rc.confirmation:off",
-                        timerProcess.operatingUuid, "modify",
-                        "totalactivetime:" + timerProcess.pendingElapsedSeconds]
-                    timerProcess.running = true
-                } else if (timerProcess.operation === "auto-modify-time") {
-                    // Auto-stop modify complete — now start the new task
-                    timerProcess.operatingUuid = timerProcess.pendingStartUuid
-                    timerProcess.operation = "start"
-                    timerProcess.pendingStartUuid = ""
-                    timerProcess.command = ["task", "rc.confirmation:off", timerProcess.operatingUuid, "start"]
-                    timerProcess.running = true
-                }
-            }
-        }
-        
-        stderr: StdioCollector {
-            id: timerStderr
-            onStreamFinished: {
-                if (this.text.trim() !== "") {
-                    if (timerProcess.operation === "modify-time") {
-                        // Stop succeeded but modify failed
-                        var msg = "Time not saved for task. Unsaved value: " +
-                            timerProcess.pendingElapsedSeconds + "s"
-                        taskManager.timerError(msg)
-                        console.error("Timer: Failed to persist totalactivetime=" +
-                            timerProcess.pendingElapsedSeconds +
-                            " for task " + timerProcess.operatingUuid)
-                        taskManager.timerOperationCompleted(timerProcess.operatingUuid, false, "modify-time")
-                    } else if (timerProcess.operation === "auto-stop") {
-                        // Auto-stop failed — do not start the new task
-                        taskManager.timerError("Could not stop active task: " + this.text.trim())
-                        taskManager.timerOperationCompleted(timerProcess.operatingUuid, false, "auto-stop")
-                        timerProcess.pendingStartUuid = ""
-                    } else if (timerProcess.operation === "auto-modify-time") {
-                        // Auto-stop modify failed — log error but still start the new task
-                        var autoMsg = "Time not saved for stopped task. Unsaved value: " +
-                            timerProcess.pendingElapsedSeconds + "s"
-                        taskManager.timerError(autoMsg)
-                        console.error("Timer: Failed to persist totalactivetime=" +
-                            timerProcess.pendingElapsedSeconds +
-                            " for task " + timerProcess.operatingUuid)
-                        // Still proceed to start the new task
-                        timerProcess.operatingUuid = timerProcess.pendingStartUuid
-                        timerProcess.operation = "start"
-                        timerProcess.pendingStartUuid = ""
-                        timerProcess.command = ["task", "rc.confirmation:off", timerProcess.operatingUuid, "start"]
-                        timerProcess.running = true
-                    } else {
-                        taskManager.timerError("Timer command failed: " + this.text.trim())
-                        taskManager.timerOperationCompleted(timerProcess.operatingUuid, false, timerProcess.operation)
-                    }
-                    taskManager.refreshTasks()
-                }
-            }
-        }
-    }
-    
-    // ---- Timer Error Display ----
-    
-    Timer {
-        id: timerErrorClearTimer
-        interval: 5000
-        running: false
-        onTriggered: taskManager.errorMessage = ""
-    }
-    
-    // Wire timerError signal to set errorMessage and restart the clear timer
-    onTimerError: function(message) {
-        taskManager.errorMessage = message
-        timerErrorClearTimer.restart()
-    }
+
     
     // ---- Public Methods ----
     
@@ -287,37 +180,99 @@ Item {
         var activeUuid = findActiveTaskUuid()
         
         if (activeUuid && activeUuid !== uuid) {
-            // Must stop active task first — compute its elapsed time
-            var activeTask = findTaskByUuid(activeUuid)
-            if (activeTask) {
-                var elapsed = computeElapsedForTask(activeTask)
-                // Chain: stop active → modify time → start new
-                timerProcess.operatingUuid = activeUuid
-                timerProcess.operation = "auto-stop"
-                timerProcess.pendingElapsedSeconds = elapsed
-                timerProcess.pendingStartUuid = uuid
-                timerProcess.command = ["task", "rc.confirmation:off", activeUuid, "stop"]
-                timerProcess.running = true
-                return
-            }
+            // Must stop active task first, then start new one
+            var stopAndStartProcess = Qt.createQmlObject(`
+                import Quickshell.Io
+                Process {
+                    property string nextUuid: ""
+                    command: []
+                    running: false
+                    stdout: StdioCollector {
+                        onStreamFinished: {
+                            // Stop succeeded — start the new task
+                            startProcess.command = ["task", "rc.confirmation:off", parent.nextUuid, "start"]
+                            startProcess.running = true
+                        }
+                    }
+                    stderr: StdioCollector {
+                        onStreamFinished: {
+                            if (this.text.trim() !== "") {
+                                console.error("Auto-stop failed:", this.text.trim())
+                            }
+                            // Attempt to start new task anyway
+                            startProcess.command = ["task", "rc.confirmation:off", parent.nextUuid, "start"]
+                            startProcess.running = true
+                        }
+                    }
+                }
+            `, taskManager)
+            stopAndStartProcess.nextUuid = uuid
+            stopAndStartProcess.command = ["task", "rc.confirmation:off", activeUuid, "stop"]
+            stopAndStartProcess.running = true
+            return
         }
         
         // No active task or same task — start directly
-        timerProcess.operatingUuid = uuid
-        timerProcess.operation = "start"
-        timerProcess.pendingStartUuid = ""
-        timerProcess.command = ["task", "rc.confirmation:off", uuid, "start"]
-        timerProcess.running = true
+        startProcess.operatingUuid = uuid
+        startProcess.command = ["task", "rc.confirmation:off", uuid, "start"]
+        startProcess.running = true
     }
     
-    // Pause (stop) an active task and persist accumulated time
-    function pauseTask(uuid, elapsedSeconds) {
-        timerProcess.operatingUuid = uuid
-        timerProcess.operation = "stop"
-        timerProcess.pendingElapsedSeconds = elapsedSeconds
-        timerProcess.pendingStartUuid = ""
-        timerProcess.command = ["task", "rc.confirmation:off", uuid, "stop"]
-        timerProcess.running = true
+    // Process for start operations
+    Process {
+        id: startProcess
+        command: []
+        running: false
+        property string operatingUuid: ""
+        
+        stdout: StdioCollector {
+            onStreamFinished: {
+                console.log("Task started:", startProcess.operatingUuid)
+                taskManager.taskModified(startProcess.operatingUuid, true)
+                taskManager.refreshTasks()
+            }
+        }
+        stderr: StdioCollector {
+            onStreamFinished: {
+                if (this.text.trim() !== "") {
+                    taskManager.errorMessage = "Failed to start task: " + this.text.trim()
+                    taskManager.errorOccurred(taskManager.errorMessage)
+                    taskManager.taskModified(startProcess.operatingUuid, false)
+                }
+            }
+        }
+    }
+
+    // Stop an active task (Timewarrior hook handles time tracking)
+    function stopTask(uuid) {
+        stopProcess.operatingUuid = uuid
+        stopProcess.command = ["task", "rc.confirmation:off", uuid, "stop"]
+        stopProcess.running = true
+    }
+
+    // Process for stop operations
+    Process {
+        id: stopProcess
+        command: []
+        running: false
+        property string operatingUuid: ""
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                console.log("Task stopped:", stopProcess.operatingUuid)
+                taskManager.taskModified(stopProcess.operatingUuid, true)
+                taskManager.refreshTasks()
+            }
+        }
+        stderr: StdioCollector {
+            onStreamFinished: {
+                if (this.text.trim() !== "") {
+                    taskManager.errorMessage = "Failed to stop task: " + this.text.trim()
+                    taskManager.errorOccurred(taskManager.errorMessage)
+                    taskManager.taskModified(stopProcess.operatingUuid, false)
+                }
+            }
+        }
     }
     
     // ---- Timer Helper Functions ----
@@ -352,25 +307,7 @@ Item {
         return null
     }
     
-    // Compute elapsed seconds for a given task object
-    function computeElapsedForTask(task) {
-        var accumulated = 0
-        if (task.totalactivetime) {
-            accumulated = parseInt(task.totalactivetime)
-            if (isNaN(accumulated)) accumulated = 0
-        }
-        if (task.start && task.start !== "") {
-            var startMs = parseTaskwarriorTimestamp(task.start)
-            if (startMs > 0) {
-                var sessionSeconds = Math.floor((Date.now() - startMs) / 1000)
-                if (sessionSeconds < 0) sessionSeconds = 0
-                return accumulated + sessionSeconds
-            }
-        }
-        return accumulated
-    }
     
-    // Parse Taskwarrior timestamp "YYYYMMDDTHHmmSSZ" to epoch milliseconds
     function parseTaskwarriorTimestamp(ts) {
         if (!ts || ts.length < 15) return 0
         var year   = parseInt(ts.substring(0, 4))
