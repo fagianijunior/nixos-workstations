@@ -215,9 +215,9 @@ Rectangle {
                     spacing: 4
                     Rectangle { width: 8; height: 8; radius: 2; color: "#89b4fa" }
                     Text {
-                        text:           "Trabalho: " + fmtHM(timeData.todayWorkSeconds)
+                        text:           "Work: " + fmtHM(timeData.todayWorkSeconds)
                         color:          "#cad3f5"
-                        font.pixelSize: 11
+                        font.pixelSize: 9
                     }
                 }
 
@@ -225,9 +225,9 @@ Rectangle {
                     spacing: 4
                     Rectangle { width: 8; height: 8; radius: 2; color: "#a6e3a1" }
                     Text {
-                        text:           "Pessoal: " + fmtHM(timeData.todayPersonalSeconds)
+                        text:           "Personal: " + fmtHM(timeData.todayPersonalSeconds)
                         color:          "#cad3f5"
-                        font.pixelSize: 11
+                        font.pixelSize: 9
                     }
                 }
 

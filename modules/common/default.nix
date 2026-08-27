@@ -71,7 +71,7 @@
   users.users.terabytes = {
     isNormalUser = true;
     description = "Carlos Fagiani Junior";
-    extraGroups = [ "wheel" "video" "audio" "podman" ];
+    extraGroups = [ "wheel" "video" "audio" "docker" ];
     shell = pkgs.fish;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFspHZN+DSFXVI3KD7hN5rbbu0GQizG5/EJkcGAD+it/ fagianijunior@gmail.com - Nobita"
@@ -90,6 +90,9 @@
 
   # Fish shell
   programs.fish.enable = true;
+
+  # Cross-architecture container builds (x86_64 host -> ARM64 image)
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
   # Base system packages
   environment.systemPackages = with pkgs; [
@@ -112,17 +115,15 @@
     ssm-session-manager-plugin
     zip
     jq
-    podman-compose
+    docker-compose
     lm_sensors
     terraform-mcp-server
+    pack
   ];
 
-  # Podman (rootless containers, no iptables/nftables conflicts)
-  virtualisation.podman = {
+  virtualisation.docker = {
     enable = true;
-    dockerCompat = true;        # alias 'docker' -> 'podman'
-    dockerSocket.enable = true; # socket compat for tools expecting Docker (e.g. pack CLI)
-    defaultNetwork.settings.dns_enabled = true;
+    daemon.settings.dns = [ "172.17.0.1" ];
     autoPrune = {
       enable = true;
       dates = "weekly";

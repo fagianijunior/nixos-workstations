@@ -6,8 +6,7 @@
     enable = true;
     allowedTCPPorts = [ ]; # No open ports by default
     allowedUDPPorts = [ config.services.tailscale.port ];
-    trustedInterfaces = [ "tailscale0" ];
-    # Podman rootless uses slirp4netns/pasta - no bridge interfaces needed in firewall
+    trustedInterfaces = [ "tailscale0" "docker0" ];
   };
   networking.nftables.enable = true;
 
@@ -16,9 +15,6 @@
     # Enable IP forwarding (required for Tailscale subnet routing if needed)
     "net.ipv4.ip_forward" = 1;
     "net.ipv6.conf.all.forwarding" = 0;
-
-    # Podman rootless doesn't need bridge-nf-call-iptables
-    "net.bridge.bridge-nf-call-iptables" = 0;
 
     # Prevent SYN flood attacks
     "net.ipv4.tcp_syncookies" = 1;

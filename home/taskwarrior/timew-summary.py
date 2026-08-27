@@ -18,20 +18,15 @@ import subprocess
 import sys
 from datetime import datetime, date, timedelta, timezone
 
-
 # ---------------------------------------------------------------------------
 # Helpers de segurança: subprocess com lista de argumentos (sem shell=True)
 # ---------------------------------------------------------------------------
 
+
 def run_cmd(args):
     """Executa um comando e retorna stdout como string. Nunca usa shell=True."""
     try:
-        result = subprocess.run(
-            args,
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
+        result = subprocess.run(args, capture_output=True, text=True, timeout=10)
         if result.returncode != 0:
             return None, result.stderr.strip()
         return result.stdout.strip(), None
@@ -46,6 +41,7 @@ def run_cmd(args):
 # ---------------------------------------------------------------------------
 # Categorização de intervalos
 # ---------------------------------------------------------------------------
+
 
 def categorize(tags):
     """
@@ -94,6 +90,7 @@ def extract_project(tags):
 # Cálculo de segundos de um intervalo
 # ---------------------------------------------------------------------------
 
+
 def interval_seconds(interval, now_utc):
     """
     Calcula a duração em segundos de um intervalo do timew export.
@@ -107,9 +104,13 @@ def interval_seconds(interval, now_utc):
 
     try:
         # Formato do timew: "20260820T143000Z"
-        start = datetime.strptime(start_str, "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+        start = datetime.strptime(start_str, "%Y%m%dT%H%M%SZ").replace(
+            tzinfo=timezone.utc
+        )
         if end_str:
-            end = datetime.strptime(end_str, "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+            end = datetime.strptime(end_str, "%Y%m%dT%H%M%SZ").replace(
+                tzinfo=timezone.utc
+            )
         else:
             end = now_utc
         seconds = int((end - start).total_seconds())
@@ -121,6 +122,7 @@ def interval_seconds(interval, now_utc):
 # ---------------------------------------------------------------------------
 # Tarefa ativa via task export
 # ---------------------------------------------------------------------------
+
 
 def get_active_task():
     """
@@ -144,7 +146,9 @@ def get_active_task():
             continue
 
         try:
-            start = datetime.strptime(start_str, "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+            start = datetime.strptime(start_str, "%Y%m%dT%H%M%SZ").replace(
+                tzinfo=timezone.utc
+            )
             elapsed = int((now_utc - start).total_seconds())
             if elapsed < 0:
                 elapsed = 0
@@ -152,7 +156,7 @@ def get_active_task():
             return {
                 "description": task.get("description", ""),
                 "project": task.get("project", ""),
-                "elapsed_seconds": elapsed
+                "elapsed_seconds": elapsed,
             }
         except (ValueError, TypeError):
             continue
@@ -163,6 +167,7 @@ def get_active_task():
 # ---------------------------------------------------------------------------
 # Processamento dos intervalos do timew export
 # ---------------------------------------------------------------------------
+
 
 def process_intervals(intervals, target_date, now_utc):
     """
@@ -175,8 +180,13 @@ def process_intervals(intervals, target_date, now_utc):
     by_project = {}  # project_name → {"seconds": int, "type": str}
 
     target_start = datetime(
-        target_date.year, target_date.month, target_date.day,
-        0, 0, 0, tzinfo=timezone.utc
+        target_date.year,
+        target_date.month,
+        target_date.day,
+        0,
+        0,
+        0,
+        tzinfo=timezone.utc,
     )
     target_end = target_start + timedelta(days=1)
 
@@ -188,9 +198,13 @@ def process_intervals(intervals, target_date, now_utc):
             continue
 
         try:
-            start = datetime.strptime(start_str, "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+            start = datetime.strptime(start_str, "%Y%m%dT%H%M%SZ").replace(
+                tzinfo=timezone.utc
+            )
             if end_str:
-                end = datetime.strptime(end_str, "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+                end = datetime.strptime(end_str, "%Y%m%dT%H%M%SZ").replace(
+                    tzinfo=timezone.utc
+                )
             else:
                 end = now_utc  # intervalo ativo
         except (ValueError, TypeError):
@@ -230,6 +244,7 @@ def process_intervals(intervals, target_date, now_utc):
 # Semana atual (Seg–Dom)
 # ---------------------------------------------------------------------------
 
+
 def get_week_dates(today):
     """Retorna lista de 7 dates da semana atual (segunda a domingo)."""
     monday = today - timedelta(days=today.weekday())
@@ -243,6 +258,7 @@ DAY_LABELS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 # Estrutura de saída vazia (fallback)
 # ---------------------------------------------------------------------------
 
+
 def empty_result(today, week_dates):
     return {
         "today": {
@@ -250,23 +266,24 @@ def empty_result(today, week_dates):
             "personal_seconds": 0,
             "other_seconds": 0,
             "by_project": [],
-            "active_task": None
+            "active_task": None,
         },
         "week": [
             {
                 "date": d.isoformat(),
                 "label": DAY_LABELS[i],
                 "work_seconds": 0,
-                "personal_seconds": 0
+                "personal_seconds": 0,
             }
             for i, d in enumerate(week_dates)
-        ]
+        ],
     }
 
 
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main():
     now_utc = datetime.now(timezone.utc)
@@ -312,7 +329,7 @@ def main():
             for k, v in today_by_project.items()
         ],
         key=lambda x: x["seconds"],
-        reverse=True
+        reverse=True,
     )
 
     # --- Tarefa ativa ---
@@ -322,12 +339,14 @@ def main():
     week = []
     for i, day in enumerate(week_dates):
         w_sec, p_sec, _, _ = process_intervals(intervals, day, now_utc)
-        week.append({
-            "date": day.isoformat(),
-            "label": DAY_LABELS[i],
-            "work_seconds": w_sec,
-            "personal_seconds": p_sec
-        })
+        week.append(
+            {
+                "date": day.isoformat(),
+                "label": DAY_LABELS[i],
+                "work_seconds": w_sec,
+                "personal_seconds": p_sec,
+            }
+        )
 
     result = {
         "today": {
@@ -335,9 +354,9 @@ def main():
             "personal_seconds": today_personal,
             "other_seconds": today_other,
             "by_project": by_project_list,
-            "active_task": active_task
+            "active_task": active_task,
         },
-        "week": week
+        "week": week,
     }
 
     print(json.dumps(result))

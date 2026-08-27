@@ -64,6 +64,7 @@
       DNSOverTLS = "opportunistic";
       Domains = [ "~." ];
       FallbackDNS = [ "1.1.1.2" "9.9.9.9" "2606:4700:4700::1112" "2620:fe::fe" ];
+      DNSStubListenerExtra = "172.17.0.1";
     };
   };
 

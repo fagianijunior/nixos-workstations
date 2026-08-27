@@ -750,6 +750,8 @@ in
     kiro
     kiro-cli
     bun
+    bubblewrap
+    socat
     (vscode-with-extensions.override {
       vscode = vscode-fhs;
       vscodeExtensions = with vscode-extensions; [
