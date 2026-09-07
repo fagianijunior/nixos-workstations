@@ -315,7 +315,8 @@ local function focus_workspace_on_monitor(ws, monitor_name)
 	for _, mon in ipairs(monitors) do
 		if mon.name == monitor_name then
 			-- Only dispatch if the workspace isn't already active on that monitor
-			if mon.activeWorkspace.id ~= ws then
+			local active_workspace = mon.active_workspace
+			if active_workspace == nil or active_workspace.id ~= ws then
 				hl.dispatch(hl.dsp.focus({ workspace = ws }))
 			end
 			return
