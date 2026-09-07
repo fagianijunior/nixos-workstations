@@ -14,7 +14,7 @@
   boot.kernel.sysctl = {
     # Enable IP forwarding (required for Tailscale subnet routing if needed)
     "net.ipv4.ip_forward" = 1;
-    "net.ipv6.conf.all.forwarding" = 0;
+    "net.ipv6.conf.all.forwarding" = 1;
 
     # Prevent SYN flood attacks
     "net.ipv4.tcp_syncookies" = 1;

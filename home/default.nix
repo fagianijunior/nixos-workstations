@@ -684,13 +684,13 @@ in
       }
       {
         label = "suspend";
-        action = "ollama ps | awk 'NR>1 {print $1}' | xargs -r ollama stop && systemctl suspend";
+        action = "systemctl suspend";
         text = "Suspend";
         keybind = "u";
       }
       {
         label = "hibernate";
-        action = "ollama ps | awk 'NR>1 {print $1}' | xargs -r ollama stop && systemctl hibernate";
+        action = "systemctl hibernate";
         text = "Hibernate";
         keybind = "h";
       }

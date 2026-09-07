@@ -18,6 +18,11 @@ import subprocess
 import sys
 from datetime import datetime, date, timedelta, timezone
 
+
+def local_timezone():
+    """Retorna o fuso horário local configurado no sistema."""
+    return datetime.now().astimezone().tzinfo
+
 # ---------------------------------------------------------------------------
 # Helpers de segurança: subprocess com lista de argumentos (sem shell=True)
 # ---------------------------------------------------------------------------
@@ -186,7 +191,7 @@ def process_intervals(intervals, target_date, now_utc):
         0,
         0,
         0,
-        tzinfo=timezone.utc,
+        tzinfo=local_timezone(),
     )
     target_end = target_start + timedelta(days=1)
 
@@ -287,13 +292,17 @@ def empty_result(today, week_dates):
 
 def main():
     now_utc = datetime.now(timezone.utc)
-    today = now_utc.date()
+    today = datetime.now().astimezone().date()
     week_dates = get_week_dates(today)
 
     # Busca intervalos do timew para a semana (segunda até hoje + amanhã por segurança)
     monday = week_dates[0]
-    monday_str = monday.strftime("%Y%m%dT000000Z")
-    sunday_str = (week_dates[6] + timedelta(days=1)).strftime("%Y%m%dT000000Z")
+    local_start = datetime(
+        monday.year, monday.month, monday.day, tzinfo=local_timezone()
+    )
+    local_end = local_start + timedelta(days=7)
+    monday_str = local_start.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    sunday_str = local_end.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
     stdout, err = run_cmd(["timew", "export", monday_str, "-", sunday_str])
 

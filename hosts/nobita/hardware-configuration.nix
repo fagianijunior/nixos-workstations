@@ -56,6 +56,8 @@
   ];
   boot.resumeDevice = "/dev/mapper/cryptswap";
 
+  services.fstrim.enable = true;
+
   # Hardware platform
   # TUF GAMING B450-PLUS II, AMD Ryzen 7 5700, Navi 23 RX 6600 XT
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;

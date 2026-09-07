@@ -20,7 +20,7 @@ in
     data.location=~/.local/share/task
 
     # News version (to avoid write errors)
-    news.version=3.4.2
+    news.version=3.5.0
 
     # Default command
     default.command=next
