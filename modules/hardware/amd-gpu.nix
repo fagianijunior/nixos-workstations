@@ -16,6 +16,15 @@
   # AMDGPU kernel module
   boot.initrd.kernelModules = [ "amdgpu" ];
 
+  # Fix: congelamento (freeze) da tela poucos segundos após o boot na RX 6600 XT (Navi 23 / RDNA2).
+  # Sintoma: tela congela com a última imagem, sem log de erro no journal (hang duro instantâneo).
+  # - amdgpu.gpu_recovery=1: força o GPU recovery, que reseta a GPU ao detectar um hang em vez de
+  #   deixar o sistema travado. Comprovado estável nesta máquina (live-USB e boot anterior),
+  #   funcionando em kernels distintos.
+  boot.kernelParams = [
+    "amdgpu.gpu_recovery=1"
+  ];
+
   # Video/GPU diagnostic tools
   environment.systemPackages = with pkgs; [
     vulkan-tools
