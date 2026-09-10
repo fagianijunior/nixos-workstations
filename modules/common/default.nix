@@ -41,6 +41,12 @@
     efi.canTouchEfiVariables = true;
   };
 
+  # PAM para o hyprlock: sem este serviço o hyprlock loga
+  # "Pam module /etc/pam.d/hyprlock does not exist" e cai no fallback "su".
+  # Definir o serviço registra /etc/pam.d/hyprlock com a stack de auth padrão do sistema,
+  # permitindo desbloquear a sessão com a senha do usuário de forma confiável.
+  security.pam.services.hyprlock = { };
+
   # Locale
   i18n = {
     defaultLocale = "pt_BR.UTF-8";
