@@ -51,9 +51,15 @@ RowLayout {
                     let usage = parseInt(match[2])
 
                     if (mountPoint.startsWith("/") && !mountPoint.includes("snap") &&
-                        !mountPoint.includes("loop") && mountPoint.length < 20) {
+                        !mountPoint.includes("loop")) {
+                        let label = mountPoint
+                        if (mountPoint === "/home/terabytes/Workspace") label = "Fuuku"
+                        else if (mountPoint === "/") label = "/"
+                        else if (mountPoint === "/nix") label = "/nix"
+                        else if (mountPoint === "/home") label = "/home"
+                        else label = mountPoint.split("/").pop() || mountPoint
                         diskData.push({
-                            mountPoint: mountPoint,
+                            mountPoint: label,
                             usage: usage,
                             color: colors[diskData.length % colors.length]
                         })
@@ -78,7 +84,7 @@ RowLayout {
 
     Timer {
         id: diskTimer
-        interval: 600000 // 10 minutos
+        interval: 30000 // 30 segundos
         running: true
         onTriggered: {
             diskMonitorProcess.running = true

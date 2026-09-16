@@ -166,6 +166,24 @@ in
     };
   };
 
+  # Shell - Bash minimalista, usado principalmente pelo Kiro (que trabalha
+  # melhor em bash que em fish). Mantemos apenas o hook do direnv; nenhuma
+  # outra integração de módulo é injetada no ~/.bashrc.
+  programs.bash = {
+    enable = true;
+
+    initExtra = ''
+      export AIDLC_DISABLE_PLAN_APPROVAL_GUARD=1
+    '';
+  };
+
+  # Não poluir o ~/.bashrc com integrações dos outros módulos. Só o direnv
+  # deve entrar no bash; starship/kitty/wezterm/yazi ficam só no fish.
+  programs.starship.enableBashIntegration = false;
+  programs.kitty.shellIntegration.enableBashIntegration = false;
+  programs.wezterm.enableBashIntegration = false;
+  programs.yazi.enableBashIntegration = false;
+
   # Shell - Fish with starship prompt
   programs.fish = {
     enable = true;
@@ -186,6 +204,8 @@ in
 
       # Terraform
       set -gx TF_INPUT false
+
+      set -gx AIDLC_DISABLE_PLAN_APPROVAL_GUARD 1
     '';
 
     functions = {
@@ -269,6 +289,60 @@ in
           aws configure set aws_session_token $SESSION_TOKEN --profile veezor-mfa
 
           echo "Credenciais temporárias geradas para o perfil 'veezor-mfa' por 12 horas."
+        '';
+      };
+
+      fuuku-open = {
+        description = "Abre o LUKS do NVME externo Fuuku e monta em ~/Workspace";
+        body = ''
+          set device /dev/sda1
+          set mapper Fuuku
+          set mountpoint /home/terabytes/Workspace
+
+          if not test -b $device
+            echo "Erro: dispositivo $device não encontrado. Verifique se o NVME está conectado."
+            return 1
+          end
+
+          if test -e /dev/mapper/$mapper
+            echo "LUKS $mapper já está aberto."
+          else
+            echo "Abrindo LUKS $mapper..."
+            sudo cryptsetup open $device $mapper
+            or return 1
+          end
+
+          if mountpoint -q $mountpoint
+            echo "$mountpoint já está montado."
+          else
+            echo "Montando $mapper em $mountpoint..."
+            sudo mount /dev/mapper/$mapper $mountpoint
+            and echo "Pronto! $mountpoint disponível."
+          end
+        '';
+      };
+
+      fuuku-close = {
+        description = "Desmonta ~/Workspace e fecha o LUKS do NVME externo Fuuku";
+        body = ''
+          set mapper Fuuku
+          set mountpoint /home/terabytes/Workspace
+
+          if mountpoint -q $mountpoint
+            echo "Desmontando $mountpoint..."
+            sudo umount $mountpoint
+            or return 1
+          else
+            echo "$mountpoint não está montado."
+          end
+
+          if test -e /dev/mapper/$mapper
+            echo "Fechando LUKS $mapper..."
+            sudo cryptsetup close $mapper
+            and echo "Pronto! Fuuku fechado com segurança."
+          else
+            echo "LUKS $mapper já está fechado."
+          end
         '';
       };
     };
@@ -473,6 +547,10 @@ in
     settings = {
       general = {
         hide_cursor = true;
+      };
+      # 'grace' saiu de 'general' e passou para 'auth' nas versões recentes do hyprlock
+      # (v0.9.x). Mantê-la em general causa: "config option <general:grace> does not exist".
+      auth = {
         grace = 5;
       };
       background = [
@@ -766,7 +844,6 @@ in
   # Firefox
   programs.firefox = {
     enable = true;
-    package = pkgs.wrapFirefox (pkgs.firefox-unwrapped.override { pipewireSupport = true; }) { };
 
     languagePacks = [ "pt-BR" "en-US" ];
 

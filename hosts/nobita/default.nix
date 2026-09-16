@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 {
   imports = [
@@ -10,8 +10,6 @@
     ../../modules/services/pipewire.nix
     ../../modules/services/networking.nix
     ../../modules/services/ssh.nix
-    ../../modules/services/foldingathome.nix
-    ../../modules/services/ollama.nix
     ../../modules/services/gaming.nix
     ../../modules/desktop/hyprland.nix
     ../../modules/desktop/catppuccin.nix
@@ -27,18 +25,25 @@
   # Nobita-specific: Desktop with AMD Ryzen 7 5700 + RX 6600 XT
   # No power management module (desktop)
 
-  # Kernel: recuar do zen 7.2.x para o linuxPackages padrão (6.18) SOMENTE neste host.
-  # Motivo: o zen 7.2.3 tem uma regressão do amdgpu em RDNA2 que trava a GPU com
-  # "WARNING ... ttm_bo_move_sync_cleanup" seguido de loop infinito de "ring sdma[01] timeout"
-  # ao mover buffers entre VRAM/RAM (submissão do Hyprland/quickshell e no resume de suspend).
-  # gpu_recovery, s2idle e o próprio 7.2.3 não resolveram. O 6.18 é anterior a essa regressão
-  # e tem suporte maduro à RX 6600 XT. O doraemon segue no zen (definido em modules/common).
-  boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
+  # Suspend: resolvido via BIOS (perfil terabytes1, set/2026):
+  # - D.O.C.P. DDR4-3200 habilitado
+  # - Global C-state Control [Disabled]
+  # - SVM Mode [Enabled]
+  # Com essas configurações + kernel zen 7.2.4, o suspend S3 "deep" funciona corretamente.
+  # Kernel zen segue o padrão do modules/common (sem override aqui).
 
-  # Disable USB wakeup for Logitech Bolt receiver (046d:c548)
-  # Prevents the receiver from waking the machine after suspend/hibernate
+  # Wi-Fi: força o carregamento do driver do Realtek RTL8852BE (Wi-Fi 6, PCI 10ec:b852).
+  # Após o flash da BIOS 4655, o autoload do módulo deixou de ocorrer no boot: o chip
+  # aparecia no lspci, mas o módulo rtw89_8852be não carregava, então não havia rádio Wi-Fi
+  # (phy0) nem interface para o iwd criar a wlan. Carregar explicitamente resolve.
+  boot.kernelModules = [ "rtw89_8852be" ];
+
+  # Regras udev do nobita:
+  # - Logitech Bolt (046d:c548): desabilita wakeup do receptor (evita acordar por engano).
+  # - devcoredump: captura automática do dump da GPU assim que o kernel o cria (ver serviço abaixo).
   services.udev.extraRules = ''
     ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c548", ATTR{power/wakeup}="disabled"
+    ACTION=="add", SUBSYSTEM=="devcoredump", RUN+="${pkgs.systemd}/bin/systemctl start gpu-coredump-capture@%k.service"
   '';
 
   # Also disable wakeup on the USB controller (XHC0) to prevent any USB device from waking
@@ -48,6 +53,30 @@
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${pkgs.bash}/bin/bash -c 'echo XHC0 > /proc/acpi/wakeup || true'";
+    };
+  };
+
+  # Captura automática do devcoredump da GPU (acionada pela regra udev acima).
+  # O devcoredump (/sys/.../devcoredump/data) só existe por ~5 min após um travamento da GPU
+  # e some no reboot, o que torna a captura manual uma corrida contra o tempo. Este serviço
+  # copia o 'data' para /var/log/gpu-dumps/ com timestamp, preservando-o para análise posterior
+  # (ex.: reportar bug do amdgpu do SDMA timeout no resume da RX 6600 XT).
+  systemd.services."gpu-coredump-capture@" = {
+    description = "Salva o devcoredump da GPU (%i) antes de expirar";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.writeShellScript "capture-gpu-coredump" ''
+        set -eu
+        dev_name="$1"
+        dev="/sys/class/devcoredump/$dev_name"
+        [ -r "$dev/data" ] || exit 0
+        mkdir -p /var/log/gpu-dumps
+        ts="$(${pkgs.coreutils}/bin/date +%Y%m%d-%H%M%S)"
+        ${pkgs.coreutils}/bin/cp "$dev/data" "/var/log/gpu-dumps/gpu-dump-$dev_name-$ts.bin"
+        # Também salva o dmesg recente, que dá contexto ao dump.
+        ${pkgs.util-linux}/bin/dmesg > "/var/log/gpu-dumps/dmesg-$dev_name-$ts.txt" 2>/dev/null || true
+        ${pkgs.systemd}/bin/systemd-cat -t gpu-coredump ${pkgs.coreutils}/bin/echo "devcoredump $dev_name salvo em /var/log/gpu-dumps"
+      ''} %i";
     };
   };
 }

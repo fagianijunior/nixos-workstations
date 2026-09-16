@@ -1,13 +1,10 @@
-{ config, pkgs, lib, ... }:
+{ pkgs, ... }:
 
 {
   # AMD GPU - AMDGPU open-source driver with Vulkan (RADV - default)
   hardware.graphics = {
     enable = true;
     enable32Bit = true; # Required for Steam/Wine 32-bit games
-    extraPackages = with pkgs; [
-      rocmPackages.clr # OpenCL runtime (needed for Folding@home GPU compute)
-    ];
   };
 
   # RADV is the default Vulkan driver in NixOS unstable

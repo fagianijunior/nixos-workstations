@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 let
   # Python with Google Calendar API dependencies
@@ -19,8 +19,7 @@ in
   # (not in home.packages to avoid conflicts with system python3)
   home.file.".local/bin/python3-google".source = "${pythonWithGoogleAPI}/bin/python3";
 
-  # Mutable QuickShell config — edit QML files directly, reload with quickshell
-  xdg.configFile."quickshell".source =
-    config.lib.file.mkOutOfStoreSymlink
-      "${config.home.homeDirectory}/Workspace/fagianijunior/nixos/home/quickshell/config";
+  # QuickShell config gerenciado pelo home-manager (imutável no store).
+  # Para editar: alterar os arquivos em home/quickshell/config e rodar home-manager switch.
+  xdg.configFile."quickshell".source = ./quickshell/config;
 }
