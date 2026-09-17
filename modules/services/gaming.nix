@@ -22,5 +22,8 @@
     winetricks
     mangohud
     gamescope
+    (retroarch.withCores (cores: with cores; [ cores.snes9x cores.genesis-plus-gx cores.beetle-psx-hw ]))
+    retroarch-assets
+    steam-rom-manager
   ];
 }
