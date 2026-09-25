@@ -19,6 +19,7 @@ in
     ./taskwarrior
     ./taskwarrior-tui
     ./pomodoro.nix
+    ./translate.nix
   ];
 
   home.username = "terabytes";
@@ -694,6 +695,16 @@ in
           margin = 90;
           multi = false;
         };
+        translate = {
+          command = "wezterm start --always-new-process --class wezterm_translate -e translate-viewer";
+          animation = "fromTop";
+          class = "wezterm_translate";
+          size = "50% 50%";
+          unfocus = "hide";
+          excludes = "*";
+          lazy = true;
+          multi = false;
+        };
       };
       shortcuts_menu.entries = {
         "Clipboard History" = [
@@ -812,6 +823,13 @@ in
     hyprshutdown
     wiremix
     swappy
+
+    # Tradução de texto selecionado (Super+T) + TTS via Piper (Super+Shift+T).
+    # Também disponíveis no PATH interativo além dos runtimeInputs do script.
+    wl-clipboard
+    python3Packages.argostranslate
+    piper-tts
+    mpv
     gimp
     telegram-desktop
     whatsapp-electron

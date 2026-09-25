@@ -250,6 +250,12 @@ local mainMod = "SUPER"
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("pypr toggle volume"))
 hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("pypr toggle bluetooth"))
 
+-- Tradução do texto selecionado (autodetecta idioma -> português)
+-- Super+T: traduz e mostra no scratchpad
+-- Super+Shift+T: traduz, mostra e fala o texto original (pronúncia)
+hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("translate-selection && pypr show translate"))
+hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("translate-selection --speak && pypr show translate"))
+
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + SHIFT + Z", hl.dsp.exec_cmd("pypr zoom"))
@@ -262,6 +268,12 @@ hl.bind(mainMod .. " + SHIFT + H", hl.dsp.exec_cmd("fish -c logitech-change-host
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("hyprshutdown"))
 hl.bind(mainMod .. " + ESCAPE", hl.dsp.exec_cmd("pkill -x wlogout || wlogout"))
+
+-- Botão físico de power: o logind ignora o evento (ver modules/common),
+-- então aqui capturamos a tecla e abrimos o menu wlogout perguntando o que fazer,
+-- evitando desligamento acidental ao mover o notebook. locked=true garante que
+-- funcione mesmo com a tela bloqueada (hyprlock).
+hl.bind("XF86PowerOff", hl.dsp.exec_cmd("pkill -x wlogout || wlogout"), { locked = true })
 
 -- Window
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
@@ -417,6 +429,13 @@ hl.window_rule({
 	match = { class = "wezterm_bluetui" },
 	float = true,
 	size = "40% 70%",
+})
+
+hl.window_rule({
+	name = "pypr-translate-scratchpad",
+	match = { class = "wezterm_translate" },
+	float = true,
+	size = "50% 50%",
 })
 
 hl.window_rule({

@@ -70,6 +70,18 @@
   # Timezone
   time.timeZone = "America/Fortaleza";
 
+  # Botão de power (hardware): não desligar direto.
+  # No Doraemon (notebook) o botão fica muito acessível e é pressionado por engano
+  # ao mover o aparelho; no Nobita adotamos o mesmo comportamento por consistência.
+  # Deixamos o logind IGNORAR o evento e o Hyprland captura a tecla XF86PowerOff
+  # para abrir o menu wlogout (ver home/hyprland.lua), perguntando o que fazer.
+  # PowerKeyIgnoreInhibited fica em default (respeita inhibitors); "ignore" já
+  # impede o poweroff automático mesmo sem inhibitor ativo.
+  services.logind.settings.Login = {
+    HandlePowerKey = "ignore";
+    HandlePowerKeyLongPress = "ignore";
+  };
+
   # Console keymap - set per host (see hosts/*/default.nix)
   # console.keyMap is configured in each host
 
