@@ -13,18 +13,19 @@ let
         args = [ "mcp-nixos" ];
         disabled = true;
       };
-      "Hyperland MCP Server" = {
-        command = "uv";
-        args = [
-          "run"
-          "--with"
-          "mcp[cli]<2"
-          "mcp"
-          "run"
-          "/home/terabytes/Workspace/MCPs/hyprmcp/hyprmcp/server.py"
-        ];
+      # hypruse: MCP ativo para computer-use no Hyprland (estado, screenshots,
+      # input, árvore de acessibilidade). Substitui o antigo hyprmcp (arquivado,
+      # último commit abr/2025 e apenas wrapper de hyprctl).
+      # Iniciando em READ-ONLY: expõe só as tools de observação (desktop,
+      # screenshot, zoom, ui, marks, binds, wait_for). Para liberar input
+      # (pointer/keyboard/launch), remover HYPRUSE_READONLY e allowlistar as
+      # tools no cliente MCP. Requer grim + wtype (ver environment.systemPackages).
+      hypruse = {
+        command = "uvx";
+        args = [ "hypruse" ];
         env = {
-          PYTHONPATH = "/home/terabytes/Workspace/MCPs/hyprmcp";
+          HYPRUSE_READONLY = "1";
+          HYPRUSE_SCREENSHOT_MODE = "image";
         };
         disabled = false;
       };

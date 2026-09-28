@@ -60,5 +60,9 @@ pkgs.testers.nixosTest {
 
     # psi-notify
     machine.succeed("which psi-notify")
+
+    # hypruse MCP dependencies (screenshots + virtual keyboard input)
+    machine.succeed("which grim")
+    machine.succeed("which wtype")
   '';
 }

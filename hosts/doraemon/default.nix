@@ -35,6 +35,14 @@
   # Console keymap
   console.keyMap = "br-abnt2";
 
+  # Fix: microfone interno não detectado (ALC257, Lenovo IdeaPad Slim 3 15ARP10)
+  # O BIOS reporta SSID como 17aa:0000 em vez do correto 17aa:3f87, fazendo o kernel
+  # aplicar um fixup genérico que não configura corretamente o microfone interno (pin 0x12).
+  # Forçar o modelo "alc257-ideapad" aplica os verbos corretos de inicialização do codec.
+  boot.extraModprobeConfig = ''
+    options snd-hda-intel model=alc257-ideapad
+  '';
+
   # Doraemon-specific: Lenovo IdeaPad Slim 3 15ARP10
   # AMD Ryzen 7 7735HS + Rembrandt RADEON 680M (integrated)
   # Includes power management module for notebook

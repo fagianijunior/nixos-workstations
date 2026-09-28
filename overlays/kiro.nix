@@ -47,6 +47,7 @@ in
       final.libcap
       final.libdrm
       final.libGL
+      final.libglvnd
       final.libsecret
       final.libsoup_3
       final.libxkbcommon
@@ -79,8 +80,15 @@ in
 
       cp -r . $out/opt/kiro/
 
-      # Symlink do executável principal
-      ln -s $out/opt/kiro/kiro $out/bin/kiro
+      # Wrapper do executável principal.
+      # O Chromium/ANGLE embutido carrega o driver gráfico via dlopen("libEGL.so.1")
+      # em runtime, por nome — algo que o autoPatchelfHook NÃO cobre (ele só corrige
+      # DT_NEEDED do ELF). Sem isso, a inicialização da GPU falha com
+      # "Could not dlopen native EGL: libEGL.so.1 ... inexistente" e o Kiro cai em
+      # renderização por software. Injetamos libglvnd (provê libEGL.so.1 /
+      # libGLESv2.so.2) e mesa (drivers) no LD_LIBRARY_PATH via wrapper.
+      makeWrapper $out/opt/kiro/kiro $out/bin/kiro \
+        --prefix LD_LIBRARY_PATH : "${final.lib.makeLibraryPath [ final.libglvnd final.mesa ]}"
 
       # Desktop entry
       cat > $out/share/applications/kiro.desktop <<EOF

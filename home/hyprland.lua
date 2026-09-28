@@ -405,6 +405,24 @@ hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = tr
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
 
+-- Lid switch: desabilita o monitor interno (eDP-1) ao fechar a tampa e o
+-- reabilita ao abrir. Isso evita que os workspaces 1-5 fiquem "presos" ao
+-- painel interno quando o notebook está dockado (HDMI conectado) com a tampa
+-- fechada. { locked = true } garante que funcione mesmo com a tela bloqueada.
+-- Quando não há monitor externo, o logind hiberna (HandleLidSwitch=hibernate),
+-- então o disable só tem efeito prático no cenário dockado.
+--
+-- IMPORTANTE: usamos hl.monitor() (API Lua nativa) e NÃO `hyprctl keyword`,
+-- pois `keyword` não funciona com o parser Lua (retorna "can't work with
+-- non-legacy parsers"). hl.monitor({ disabled = true }) remove o output do
+-- layout, migrando workspaces/janelas para o(s) monitor(es) restante(s).
+hl.bind("switch:on:Lid Switch", function()
+	hl.monitor({ output = "eDP-1", disabled = true })
+end, { locked = true })
+hl.bind("switch:off:Lid Switch", function()
+	hl.monitor({ output = "eDP-1", disabled = false, mode = "preferred", position = "auto", scale = "1" })
+end, { locked = true })
+
 --------------------------------
 ---- WINDOWS AND WORKSPACES ----
 --------------------------------

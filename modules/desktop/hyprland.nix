@@ -39,7 +39,8 @@
   # Desktop support packages
   environment.systemPackages = with pkgs; [
     wl-clipboard       # Clipboard manager for Wayland
-    grim               # Screenshot utility
+    grim               # Screenshot utility (também usado pelo hypruse MCP)
+    wtype              # Teclado virtual Wayland (input do hypruse MCP)
     slurp              # Region selector
     wl-screenrec       # Screen recorder (VA-API hardware encoding)
     wlsunset           # Blue light filter
