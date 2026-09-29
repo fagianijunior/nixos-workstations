@@ -52,13 +52,17 @@ let
         args = [ "stdio" ];
         disabled = true;
       };
-      "aws-mcp" = {
+      aws-mcp = {
         command = "uvx";
-        args = [ "awslabs.aws-api-mcp-server@latest" ];
-        env = {
-          AWS_REGION = "us-east-1";
-        };
-        disabled = true;
+        timeout = 100000;
+        transport = "stdio";
+        disabled = false;
+        args = [
+          "mcp-proxy-for-aws@1.6.3"
+          "https://aws-mcp.us-east-1.api.aws/mcp"
+          "--metadata"
+          "AWS_REGION=us-east-1"
+        ];
       };
     };
   };
