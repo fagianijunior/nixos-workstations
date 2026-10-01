@@ -844,6 +844,7 @@ in
     uv
     nixd
     kiro
+    musl
     kiro-cli
     bun
     bubblewrap
