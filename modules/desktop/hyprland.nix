@@ -8,9 +8,23 @@
   };
 
   # XDG Desktop Portal
+  # O portal é o que habilita captura/compartilhamento de tela (ScreenCast)
+  # no Wayland para Steam, Discord, OBS, navegadores, etc.
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
+    extraPortals = [
+      pkgs.xdg-desktop-portal-hyprland # ScreenCast + Screenshot (seletor de monitor/janela)
+      pkgs.xdg-desktop-portal-gtk      # Fallback: FileChooser e demais diálogos
+    ];
+    # Roteia cada interface para o backend correto. Sem isso o seletor de
+    # tela pode não aparecer em algumas versões.
+    config = {
+      common = {
+        default = [ "hyprland" "gtk" ];
+        "org.freedesktop.impl.portal.ScreenCast" = [ "hyprland" ];
+        "org.freedesktop.impl.portal.Screenshot" = [ "hyprland" ];
+      };
+    };
   };
 
   # Login manager - greetd with tuigreet

@@ -8,6 +8,15 @@
       auto-optimise-store = true;
       trusted-users = [ "root" "@wheel" ];
 
+      # Preserva as dependências de build e os outputs dos derivations que
+      # estão referenciados por GC roots (ex: os roots que o devenv/nix-direnv
+      # criam em cada projeto). Sem isso, o GC coleta as toolchains/dependências
+      # dos shells de desenvolvimento e o devenv precisa baixar tudo de novo na
+      # próxima vez que você entra no projeto. Esta é a correção central para o
+      # problema de "o devenv rebaixa tudo após o nix-collect-garbage".
+      keep-outputs = true;
+      keep-derivations = true;
+
       # Devenv binary cache (avoid recompilation)
       substituters = [
         "https://cache.nixos.org/"
@@ -21,7 +30,12 @@
     gc = {
       automatic = true;
       dates = "weekly";
-      options = "--delete-older-than 15d";
+      # Antes: "--delete-older-than 15d". Mantém gerações por mais tempo para não
+      # descartar ambientes de desenvolvimento usados recentemente. Combinado com
+      # keep-outputs/keep-derivations acima, os GC roots do devenv (em
+      # <projeto>/.devenv/gc/shell, registrados em /nix/var/nix/gcroots/auto)
+      # protegem o cache dos shells enquanto esses roots existirem.
+      options = "--delete-older-than 30d";
     };
   };
 
@@ -147,6 +161,8 @@
       dates = "weekly";
     };
   };
+
+  services.flatpak.enable = true;
 
   # Enable dbus
   services.dbus.enable = true;

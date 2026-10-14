@@ -222,16 +222,34 @@ in
         '';
       };
 
+      # GC do sistema. Com nix.settings.keep-outputs/keep-derivations ativos
+      # (ver modules/common/default.nix) e os GC roots do devenv presentes em
+      # cada projeto (<projeto>/.devenv/gc/shell), estes comandos NÃO apagam o
+      # cache dos ambientes devenv ativos. O 'ngc' puro (sem idade) é o mais
+      # agressivo: use com parcimônia.
       ngc = {
+        description = "GC agressivo: remove TODAS as gerações antigas (respeita GC roots do devenv)";
         body = "sudo nix-collect-garbage -d";
       };
 
       ngc7 = {
+        description = "GC: remove gerações com mais de 7 dias";
         body = "sudo nix-collect-garbage --delete-older-than 7d";
       };
 
       ngc14 = {
+        description = "GC: remove gerações com mais de 14 dias";
         body = "sudo nix-collect-garbage --delete-older-than 14d";
+      };
+
+      # Limpeza específica do devenv: resolve os GC roots dos shells, mantém só
+      # a última invocação por projeto e remove os roots órfãos acumulados em
+      # ~/.local/share/devenv/gc/ antes de rodar o GC do Nix. Prefira este
+      # comando a 'ngc' quando quiser liberar espaço sem perder o cache dos
+      # ambientes de desenvolvimento que você ainda usa.
+      devenv-gc = {
+        description = "GC do devenv: limpa roots órfãos e preserva ambientes ativos";
+        body = "devenv gc";
       };
 
       logitech-change-host = {
