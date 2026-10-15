@@ -103,7 +103,7 @@
   users.users.terabytes = {
     isNormalUser = true;
     description = "Carlos Fagiani Junior";
-    extraGroups = [ "wheel" "video" "audio" "docker" ];
+    extraGroups = [ "wheel" "video" "render" "audio" "docker" ];
     shell = pkgs.fish;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFspHZN+DSFXVI3KD7hN5rbbu0GQizG5/EJkcGAD+it/ fagianijunior@gmail.com - Nobita"

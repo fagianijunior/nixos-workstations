@@ -5,6 +5,13 @@
   hardware.graphics = {
     enable = true;
     enable32Bit = true; # Required for Steam/Wine 32-bit games
+    extraPackages = with pkgs; [
+      rocmPackages.clr.icd # Renderizador ROCm OpenCL
+    ];
+  };
+
+  environment.variables = {
+    HSA_OVERRIDE_GFX_VERSION = "10.3.0";
   };
 
   # RADV is the default Vulkan driver in NixOS unstable
