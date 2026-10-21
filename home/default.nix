@@ -340,7 +340,6 @@ in
           end
         '';
       };
-
       fuuku-close = {
         description = "Desmonta ~/Workspace e fecha o LUKS do NVME externo Fuuku";
         body = ''
@@ -348,6 +347,27 @@ in
           set mountpoint /home/terabytes/Workspace
 
           if mountpoint -q $mountpoint
+            # fuser -m verifica se há algo acessando o ponto de montagem
+            if sudo fuser -m $mountpoint > /dev/null 2>&1
+              echo "⚠️ ATENÇÃO: $mountpoint está ocupado por processos em segundo plano!"
+              sudo fuser -mv $mountpoint
+              
+              echo ""
+              # Sintaxe correta do Fish para leitura interativa de string de prompt
+              read -l --prompt-str="Deseja forçar o encerramento desses processos e continuar? [s/N]: " confirm
+              
+              # No Fish, usamos 'or' em vez de '-o' para condições múltiplas
+              if test "$confirm" = "s"; or test "$confirm" = "S"
+                echo "Encerrando processos ativos..."
+                # Envia o sinal KILL (-k) para tudo que está pendurado na montagem
+                sudo fuser -mk -9 $mountpoint
+                sleep 1
+              else
+                echo "❌ Operação abortada pelo usuário."
+                return 1
+              end
+            end
+
             echo "Desmontando $mountpoint..."
             sudo umount $mountpoint
             or return 1
@@ -870,6 +890,7 @@ in
     (vscode-with-extensions.override {
       vscode = vscode-fhs;
       vscodeExtensions = with vscode-extensions; [
+        kilocode.kilo-code
       ];
     })
     github-mcp-server

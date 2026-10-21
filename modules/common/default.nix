@@ -139,6 +139,7 @@
     tree
     unzip
     file
+    psmisc
     pciutils
     usbutils
     lsof
