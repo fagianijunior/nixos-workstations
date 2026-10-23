@@ -25,10 +25,23 @@
       OLLAMA_CONTEXT_LENGTH = "32768";
     };
 
-    # Modelo recomendado para agentic coding/tool-use local. O qwen2.5-coder
-    # segue o formato de ferramentas do Cline melhor que llama3.1:8b nesta faixa
-    # de tamanho. Declarado aqui para ficar sempre disponível após o rebuild.
+    # Modelo recomendado para agentic coding/tool-use com o Cline ATUAL.
+    #
+    # O Cline (>= v3.35) usa NATIVE TOOL CALLING: manda as tools como JSON Schema
+    # na API e espera a resposta no campo estruturado `tool_calls`. NÃO usa mais
+    # o formato XML-no-system-prompt antigo.
+    #
+    # Nesse modelo de uso, o que importa é o template de tool-calling do modelo
+    # no Ollama emitir `tool_calls` de verdade. Teste nos modelos locais:
+    #   - llama3.1:8b      -> emite tool_calls estruturado (content vazio)  [OK]
+    #   - qwen2.5-coder:7b -> escreve a tool como TEXTO no content           [QUEBRA]
+    # O Cline mostra o JSON do qwen como texto e nao executa a tool (bug conhecido
+    # cline#14453). Por isso o llama3.1:8b e a melhor escolha local aqui, apesar de
+    # o qwen ser melhor em geracao de codigo puro.
+    #
+    # Mantemos o qwen2.5-coder para uso NAO-agentico (autocomplete, chat de codigo).
     loadModels = [
+      "llama3.1:8b"
       "qwen2.5-coder:7b"
     ];
   };
