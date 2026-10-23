@@ -34,10 +34,15 @@ let
         args = [ "mcp-remote" "https://qt-docs-mcp.qt.io/mcp" ];
         disabled = true;
       };
+      # taskwarrior: binário vem do overlay overlays/mcp-server-taskwarrior.nix
+      # (buildNpmPackage, reprodutível, sem npx/npm global). O server é um wrapper
+      # que executa o `task` local — taskwarrior3 já está no PATH via
+      # home/taskwarrior. Caminho absoluto da store para não depender do PATH do
+      # processo que lança o MCP.
       taskwarrior = {
-        command = "npx";
-        args = [ "-y" "mcp-server-taskwarrior" ];
-        disabled = true;
+        command = "${pkgs.mcp-server-taskwarrior}/bin/mcp-server-taskwarrior";
+        args = [ ];
+        disabled = false;
       };
       github = {
         command = "github-mcp-server";
