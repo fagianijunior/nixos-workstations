@@ -902,16 +902,15 @@ in
     bun
     bubblewrap
     socat
-    (vscode-with-extensions.override {
-      vscode = vscode-fhs;
-      vscodeExtensions = with vscode-extensions; [
-        kilocode.kilo-code
-      ];
-    })
     github-mcp-server
     gh
     awscli2
   ];
+
+  programs.vscode = {
+    enable = true;
+    package = pkgs.vscode-fhs;
+  };
 
   # Firefox
   programs.firefox = {
