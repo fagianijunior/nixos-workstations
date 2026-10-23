@@ -1,4 +1,4 @@
-{ config, pkgs, catppuccin, ... }:
+{ config, pkgs, catppuccin, osConfig, ... }:
 
 let
   lock-false = {
@@ -9,6 +9,12 @@ let
     Value = true;
     Status = "locked";
   };
+
+  # Hostname do sistema, injetado automaticamente pelo módulo NixOS do
+  # home-manager via `osConfig`. Usado para escolher o fragmento de config do
+  # Hyprland específico do host (nobita / doraemon). Sem necessidade de
+  # extraSpecialArgs: o `.#nobita`/`.#doraemon` do rebuild já define isto.
+  hostName = osConfig.networking.hostName;
 in
 {
   imports = [
@@ -622,10 +628,19 @@ in
     systemd.enable = true;
   };
 
-  # Hyprland Lua config — managed by Nix (rebuild to apply changes)
+  # Hyprland Lua config — managed by Nix (rebuild to apply changes).
+  #
+  # O arquivo final é montado concatenando a parte comum (common.lua) com o
+  # fragmento específico do host (nobita.lua / doraemon.lua). Assim cada host
+  # carrega SÓ a config de monitores/workspaces que lhe diz respeito, sem
+  # if/else por hostname dentro do Lua. A ordem importa: common.lua primeiro
+  # (define `mainMod` e helpers), host depois.
   xdg.configFile."hypr/hyprland.lua" = {
     force = true;
-    source = ./hyprland.lua;
+    source = pkgs.concatText "hyprland.lua" [
+      ./hyprland/common.lua
+      ./hyprland/${hostName}.lua
+    ];
   };
 
   # Hyprland Qt6 support style config
