@@ -17,7 +17,7 @@
       system = "x86_64-linux";
       overlays = [
         (import ./overlays/kiro.nix)
-        (import ./overlays/linux-firmware.nix)
+        (import ./overlays/pyopenjtalk-plus.nix)
       ];
       pkgs = import nixpkgs {
         inherit system overlays;

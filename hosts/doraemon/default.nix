@@ -25,9 +25,13 @@
   # linux-firmware, NÃO o kernel: o flake update (nixpkgs ef34387) subiu o firmware
   # 20260810 -> 20260910, e a nova revisão do yellow_carp_dmcub.bin passou a ser rejeitada
   # pelo PSP, quebrando o DMCUB (display microcontroller) -- HDMI morto, render lenta,
-  # brilho travado, e falha de boot precoce. Corrigido em overlays/linux-firmware.nix
-  # (pin do firmware em 20260810). Com o firmware corrigido, o zen 7.2.4 volta a funcionar,
-  # então o pin de kernel foi removido para manter consistência com o nobita.
+  # brilho travado, e falha de boot precoce.
+  #
+  # Mitigado na época com um overlay que pinava o firmware em 20260810 (overlays/linux-firmware.nix).
+  # A regressão foi resolvida upstream a partir do firmware 20261019: o yellow_carp_dmcub.bin
+  # voltou a ser aceito pelo PSP (DMCUB error = 0 no boot do doraemon). Com isso o overlay de
+  # firmware foi removido e o zen voltou a funcionar com o firmware do nixpkgs, mantendo
+  # consistência com o nobita.
 
   # Hostname
   networking.hostName = "doraemon";
