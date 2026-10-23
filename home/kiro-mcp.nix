@@ -11,7 +11,7 @@ let
       nixos = {
         command = "uvx";
         args = [ "mcp-nixos" ];
-        disabled = true;
+        disabled = false;
       };
       # hypruse: MCP ativo para computer-use no Hyprland (estado, screenshots,
       # input, árvore de acessibilidade). Substitui o antigo hyprmcp (arquivado,
