@@ -13,6 +13,15 @@ let
         args = [ "mcp-nixos" ];
         disabled = false;
       };
+      # Busca web via DuckDuckGo (sem API key). Provê search_web + fetch de
+      # conteúdo. Alternativa ao provider @Web do Continue (descontinuado) e
+      # a qualquer backend de busca hospedado. Mesmo server pode ser declarado
+      # no config.yaml do Continue (bloco mcpServers).
+      duckduckgo = {
+        command = "uvx";
+        args = [ "duckduckgo-mcp-server" ];
+        disabled = false;
+      };
       # hypruse: MCP ativo para computer-use no Hyprland (estado, screenshots,
       # input, árvore de acessibilidade). Substitui o antigo hyprmcp (arquivado,
       # último commit abr/2025 e apenas wrapper de hyprctl).
