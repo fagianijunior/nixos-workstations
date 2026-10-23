@@ -20,6 +20,7 @@ in
   imports = [
     catppuccin.homeModules.catppuccin
     ./kiro-mcp.nix
+    ./continue-mcp.nix
     ./neovim
     ./quickshell.nix
     ./taskwarrior
