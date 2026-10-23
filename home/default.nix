@@ -178,10 +178,6 @@ in
   # outra integração de módulo é injetada no ~/.bashrc.
   programs.bash = {
     enable = true;
-
-    initExtra = ''
-      export AIDLC_DISABLE_PLAN_APPROVAL_GUARD=1
-    '';
   };
 
   # Não poluir o ~/.bashrc com integrações dos outros módulos. Só o direnv
@@ -211,8 +207,6 @@ in
 
       # Terraform
       set -gx TF_INPUT false
-
-      set -gx AIDLC_DISABLE_PLAN_APPROVAL_GUARD 1
     '';
 
     functions = {
