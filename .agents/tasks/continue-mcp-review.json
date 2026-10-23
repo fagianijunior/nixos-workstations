@@ -1,0 +1,11 @@
+{
+  "verdict": "APPROVED",
+  "findings": [
+    {
+      "label": "Evidência de verificação ausente",
+      "severity": "non-blocking",
+      "detail": "O plano (itens 4 e 5) pede eval do activation e dry-build do sistema, mas o coder não registrou resultado algum (sem commit, sem nota). O reviewer supriu o item 4 com um spot-check (nix eval do .data do atributo continueMcp), que passou e produziu JSON/YAML válido com os 8 servers esperados e sem hypruse. O dry-build do toplevel (item 5) permanece sem registro; recomenda-se rodar `nix build '.#nixosConfigurations.nobita.config.system.build.toplevel' --dry-run` antes do switch. Não bloqueia."
+    }
+  ],
+  "reviewDoc": "/home/terabytes/Workspace/fagianijunior/nixos/.agents/tasks/continue-mcp-review.md"
+}
