@@ -129,7 +129,7 @@
   # Base system packages
   environment.systemPackages = with pkgs; [
     git
-    git-remote-codecommit
+    # git-remote-codecommit
     vim-full
     wl-clipboard
     curl
