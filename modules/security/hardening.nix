@@ -4,7 +4,7 @@
   # Firewall - nftables (SECURITY-07)
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [ ]; # No open ports by default
+    allowedTCPPorts = [ 8080 11434 ]; # No open ports by default
     allowedUDPPorts = [ config.services.tailscale.port ];
     trustedInterfaces = [ "tailscale0" "docker0" ];
   };

@@ -8,6 +8,7 @@
     ../../modules/hardware/bluetooth.nix
     ../../modules/hardware/solaar.nix
     ../../modules/services/ai.nix
+    ../../modules/services/n8n.nix
     ../../modules/services/pipewire.nix
     ../../modules/services/networking.nix
     ../../modules/services/ssh.nix

@@ -40,9 +40,18 @@
     # o qwen ser melhor em geracao de codigo puro.
     #
     # Mantemos o qwen2.5-coder para uso NAO-agentico (autocomplete, chat de codigo).
+    #
+    # gemma3:4b -> classificacao de email no fluxo do n8n (organizar Gmail).
+    # Escolhido por ser rapido, multilingue (bom em PT-BR) e caber folgado na
+    # VRAM da RX 6600 (8GB) mesmo com o contexto elevado acima. Nao precisa de
+    # tool-calling aqui: o n8n so pede uma classificacao de texto (nome da label),
+    # entao o criterio do llama3.1 (emitir tool_calls) nao se aplica. O 12B/27B
+    # tambem rodam, mas apertam a VRAM junto do KV cache -- o 4b e o ponto otimo
+    # para essa tarefa. Veja modules/services/n8n.nix.
     loadModels = [
       "llama3.1:8b"
       "qwen2.5-coder:7b"
+      "gemma3:4b"
     ];
   };
 }
