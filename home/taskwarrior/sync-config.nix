@@ -94,6 +94,10 @@ in
     uda.client.label=Client
     uda.client.values=
 
+    # ID da tarefa no ClickUp (deduplicacao do workflow n8n)
+    uda.clickup_id.type=string
+    uda.clickup_id.label=ClickUp ID
+
     # Urgency coefficients
     urgency.user.project.Inbox.coefficient=15.0
     urgency.user.project.Work.coefficient=10.0
