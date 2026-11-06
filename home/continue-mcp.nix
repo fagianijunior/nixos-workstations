@@ -76,6 +76,17 @@ let
         command = "terraform-mcp-server";
         args = [ "stdio" ];
       }
+      # make: servidor MCP remoto da Make via mcp-remote (mesmo padrão do
+      # qt-docs). A zona e a API key são injetadas em tempo de activation a
+      # partir de ~/.config/make-mcp/ (ver abaixo).
+      {
+        name = "make";
+        command = "npx";
+        args = [
+          "mcp-remote"
+          "https://MAKE_ZONE_PLACEHOLDER/mcp/u/REPLACE_WITH_MAKE_API_KEY/v2"
+        ];
+      }
       # aws-mcp: as chaves timeout/transport do kiro não existem no formato do
       # Continue e são descartadas; só name/command/args permanecem.
       {
@@ -109,6 +120,16 @@ in
     GH_TOKEN=$(${pkgs.gh}/bin/gh auth token 2>/dev/null || true)
     if [ -n "$GH_TOKEN" ]; then
       sed -i "s/REPLACE_WITH_YOUR_TOKEN/$GH_TOKEN/" "$HOME/.continue/config.yaml"
+    fi
+
+    # Inject Make MCP credentials from local secret files (fora da /nix/store).
+    #   ~/.config/make-mcp/api-key  -> API key da Make
+    #   ~/.config/make-mcp/zone     -> zona (ex.: eu2.make.com); default us1.make.com
+    if [ -f "$HOME/.config/make-mcp/api-key" ]; then
+      MAKE_API_KEY=$(tr -d '[:space:]' < "$HOME/.config/make-mcp/api-key")
+      MAKE_ZONE=$(tr -d '[:space:]' < "$HOME/.config/make-mcp/zone" 2>/dev/null || true)
+      [ -n "$MAKE_ZONE" ] || MAKE_ZONE="us1.make.com"
+      sed -i "s|MAKE_ZONE_PLACEHOLDER|$MAKE_ZONE|; s|REPLACE_WITH_MAKE_API_KEY|$MAKE_API_KEY|" "$HOME/.continue/config.yaml"
     fi
   '';
 }

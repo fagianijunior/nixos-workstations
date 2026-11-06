@@ -66,6 +66,18 @@ let
         args = [ "stdio" ];
         disabled = true;
       };
+      # make: servidor MCP remoto da Make (cloud, Streamable HTTP). Roda via
+      # mcp-remote (mesmo padrão do qt-docs). Autenticação por API key embutida
+      # na URL: /mcp/u/<API_KEY>/v2. O placeholder REPLACE_WITH_MAKE_API_KEY e o
+      # <MAKE_ZONE> são substituídos em tempo de activation (ver abaixo).
+      make = {
+        command = "npx";
+        args = [
+          "mcp-remote"
+          "https://MAKE_ZONE_PLACEHOLDER/mcp/u/REPLACE_WITH_MAKE_API_KEY/v2"
+        ];
+        disabled = true;
+      };
       aws-mcp = {
         command = "uvx";
         timeout = 100000;
@@ -77,6 +89,17 @@ let
           "--metadata"
           "AWS_REGION=us-east-1"
         ];
+      };
+      n8n = {
+        command = "npx";
+        args = [
+          "-y"
+          "n8n-mcp"
+        ];
+        env = {
+          N8N_HOST = "http://localhost:5678";
+          N8N_API_KEY = "YOUR_N8N_API_KEY";
+        };
       };
     };
   };
@@ -94,6 +117,20 @@ in
     GH_TOKEN=$(${pkgs.gh}/bin/gh auth token 2>/dev/null || true)
     if [ -n "$GH_TOKEN" ]; then
       sed -i "s/REPLACE_WITH_YOUR_TOKEN/$GH_TOKEN/" "$HOME/.kiro/settings/mcp.json"
+    fi
+
+    # Inject Make MCP credentials from local secret files (fora da /nix/store).
+    #   ~/.config/make-mcp/api-key  -> API key da Make
+    #   ~/.config/make-mcp/zone     -> zona (ex.: eu2.make.com); default us1.make.com
+    if [ -f "$HOME/.config/make-mcp/api-key" ]; then
+      MAKE_API_KEY=$(tr -d '[:space:]' < "$HOME/.config/make-mcp/api-key")
+      MAKE_ZONE=$(tr -d '[:space:]' < "$HOME/.config/make-mcp/zone" 2>/dev/null || true)
+      [ -n "$MAKE_ZONE" ] || MAKE_ZONE="us1.make.com"
+      sed -i "s|MAKE_ZONE_PLACEHOLDER|$MAKE_ZONE|; s|REPLACE_WITH_MAKE_API_KEY|$MAKE_API_KEY|" "$HOME/.kiro/settings/mcp.json"
+    fi
+    if [ -f "$HOME/.config/n8n-mcp/api-key" ]; then
+      N8N_API_KEY=$(tr -d '[:space:]' < "$HOME/.config/n8n-mcp/api-key")
+      sed -i "s|YOUR_N8N_API_KEY|$N8N_API_KEY|" "$HOME/.kiro/settings/mcp.json"
     fi
   '';
 }
