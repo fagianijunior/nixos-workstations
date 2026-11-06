@@ -115,7 +115,6 @@
       nixd
       terraform-ls
       rubyPackages.solargraph
-      intelephense
       pyright
       lua-language-server
       bash-language-server
@@ -126,7 +125,6 @@
       prettier
       stylua
       rubocop
-      php84Packages.php-cs-fixer
       black
       shfmt
     ];

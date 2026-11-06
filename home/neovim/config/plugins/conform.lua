@@ -31,7 +31,9 @@ conform.setup({
     -- Ruby
     ruby = { "rubocop" },
 
-    -- PHP
+    -- PHP (php-cs-fixer vem por projeto, ex.: devenv.nix; não é instalado no
+    -- sistema. Fora de um shell que o forneça, o conform simplesmente não
+    -- formata PHP.)
     php = { "php_cs_fixer" },
 
     -- Python

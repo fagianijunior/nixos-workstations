@@ -95,6 +95,8 @@ vim.lsp.config("solargraph", {
   },
 })
 
+-- intelephense: binário vem por projeto (devenv.nix), não do sistema. O LSP
+-- só sobe quando `intelephense` está no PATH do shell que lançou o Neovim.
 vim.lsp.config("intelephense", {
   capabilities = capabilities,
 })

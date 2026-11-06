@@ -20,6 +20,41 @@ Configuração NixOS declarativa para duas máquinas usando Nix Flakes.
 - **Btrfs** + **LUKS** (filesystem + criptografia)
 - **systemd-boot** (bootloader)
 
+## Ambientes de desenvolvimento
+
+Runtimes e toolchains de linguagem **não** ficam instalados no sistema global.
+A cada projeto, o ambiente é provido por `devenv.nix` (ou `nix develop`), o que
+mantém o sistema enxuto e evita arrastar dependências pesadas.
+
+### PHP
+
+O interpretador `php` e suas extensões não são instalados globalmente. Quando
+precisar de PHP, use o `devenv.nix` do projeto.
+
+O Neovim mantém apenas a integração **leve**, que não puxa o interpretador:
+
+- **Syntax highlight**: parser Treesitter de PHP (biblioteca C, sem runtime PHP).
+- **LSP** (`intelephense`) e **formatter** (`php-cs-fixer`): apenas referenciados
+  por nome na config. Só entram em ação quando os binários estão no `PATH` do
+  shell que lançou o Neovim — ou seja, dentro de um `devenv` que os forneça.
+  Fora dele, ficam inativos, sem erro.
+
+Exemplo de `devenv.nix` para um projeto PHP:
+
+```nix
+{ pkgs, ... }:
+{
+  languages.php.enable = true;
+  packages = [
+    pkgs.php84Packages.php-cs-fixer
+    pkgs.intelephense
+  ];
+}
+```
+
+Abrindo o Neovim dentro desse shell, o LSP sobe e a formatação funciona
+automaticamente.
+
 ## Estrutura
 
 
