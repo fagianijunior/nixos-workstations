@@ -20,6 +20,7 @@
         (import ./overlays/pyopenjtalk-plus.nix)
         (import ./overlays/mcp-server-taskwarrior.nix)
       ];
+        (import ./overlays/aidlc.nix)
       pkgs = import nixpkgs {
         inherit system overlays;
       };
