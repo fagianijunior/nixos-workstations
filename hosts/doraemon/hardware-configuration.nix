@@ -36,7 +36,6 @@
   # LUKS encryption
   boot.initrd.luks.devices."cryptroot" = {
     device = "/dev/disk/by-uuid/1c8c316d-091c-4d26-b4b9-ab6012041559";
-    preLVM = true;
     allowDiscards = true; # Enable TRIM for NVMe
   };
 

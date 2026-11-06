@@ -867,7 +867,7 @@ in
     psi-notify
     hyprpolkitagent
     hyprland-qt-support
-    hyprland-qtutils
+    hyprland-guiutils
     hyprshutdown
     wiremix
     swappy
