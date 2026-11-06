@@ -26,7 +26,7 @@
 
   # Gaming packages
   environment.systemPackages = with pkgs; [
-    lutris
+    # lutris
     wine
     winetricks
     mangohud
