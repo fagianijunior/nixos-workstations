@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
   # Hyprland Wayland compositor
@@ -12,10 +12,19 @@
   # no Wayland para Steam, Discord, OBS, navegadores, etc.
   xdg.portal = {
     enable = true;
-    extraPortals = [
-      pkgs.xdg-desktop-portal-hyprland # ScreenCast + Screenshot (seletor de monitor/janela)
-      pkgs.xdg-desktop-portal-gtk      # Fallback: FileChooser e demais diálogos
-    ];
+    # `programs.hyprland` + o módulo xdg.portal já injetam automaticamente o
+    # xdg-desktop-portal-hyprland (via portalPackage) e o gtk. Declará-los de
+    # novo aqui fazia a lista agregada conter o mesmo pacote duas vezes, e a
+    # geração do diretório user-units falhava ao criar o segundo symlink
+    # idêntico (ln: failed to create symbolic link
+    # 'xdg-desktop-portal-hyprland.service': File exists).
+    # `lib.mkForce [ ... ]` com `lib.unique` garante uma lista sem duplicatas
+    # mantendo os dois backends que queremos: hyprland (ScreenCast/Screenshot)
+    # e gtk (FileChooser e demais diálogos).
+    extraPortals = lib.mkForce (lib.unique [
+      pkgs.xdg-desktop-portal-hyprland
+      pkgs.xdg-desktop-portal-gtk
+    ]);
     # Roteia cada interface para o backend correto. Sem isso o seletor de
     # tela pode não aparecer em algumas versões.
     config = {
