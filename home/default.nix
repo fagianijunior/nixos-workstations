@@ -961,6 +961,11 @@ in
           install_url = "https://addons.mozilla.org/firefox/downloads/file/4613250/latest.xpi";
           installation_mode = "force_installed";
         };
+        # ViolentMonkey
+        "{aecec67f-0d10-4fa7-b7c7-609a2db280cf}" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/file/5170937/latest.xpi";
+          installation_mode = "force_installed";
+        };
         # Theme: Catppuccin-macchiato
         "{030fcc87-b84d-4004-a7de-a6166cdf7333}" = {
           install_url = "https://addons.mozilla.org/firefox/downloads/file/3958203/latest.xpi";
