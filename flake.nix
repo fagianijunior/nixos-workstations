@@ -17,10 +17,11 @@
       system = "x86_64-linux";
       overlays = [
         (import ./overlays/kiro.nix)
+        (import ./overlays/clickup.nix)
         (import ./overlays/pyopenjtalk-plus.nix)
         (import ./overlays/mcp-server-taskwarrior.nix)
-      ];
         (import ./overlays/aidlc.nix)
+      ];
       pkgs = import nixpkgs {
         inherit system overlays;
       };
