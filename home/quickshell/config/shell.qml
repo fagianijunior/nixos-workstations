@@ -25,7 +25,6 @@ PanelWindow {
     property bool sensitiveData: false
 
     implicitWidth: 200
-    width: 200
     exclusiveZone: 200
     color: Qt.rgba(36/255, 39/255, 58/255, 0.7) // Catppuccin Macchiato Base color with transparency
 
