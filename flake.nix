@@ -18,7 +18,6 @@
       overlays = [
         (import ./overlays/kiro.nix)
         (import ./overlays/clickup.nix)
-        (import ./overlays/pyopenjtalk-plus.nix)
         (import ./overlays/mcp-server-taskwarrior.nix)
         (import ./overlays/aidlc.nix)
       ];
