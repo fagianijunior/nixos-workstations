@@ -6,18 +6,19 @@
         "rule": {
           "interval": [
             {
-              "field": "hours"
+              "field": "cronExpression",
+              "expression": "0 7-19 * * *"
             }
           ]
         }
       },
-      "id": "13cccd6e-96de-4e45-99a8-0c32d27c0ac6",
+      "id": "ff2f04c8-107a-4b00-be49-04aadcdfa572",
       "name": "Agenda (de hora em hora)",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -1040,
-        0
+        16,
+        -464
       ],
       "notes": "Dispara de hora em hora (timezone America/Fortaleza, definido no modulo NixOS services.n8n em GENERIC_TIMEZONE). Ajuste o intervalo conforme a frequencia que quiser. Voce tambem pode trocar por um Manual Trigger para testar rodando a mao."
     },
@@ -49,13 +50,13 @@
         },
         "options": {}
       },
-      "id": "6d652977-87cf-4daa-9e60-06cb0a5f688e",
+      "id": "190a503b-a558-4986-bd75-aa8a2c9eb3cb",
       "name": "ClickUp: tarefas do usuario",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -320,
-        0
+        688,
+        -464
       ],
       "credentials": {
         "clickUpApi": {
@@ -69,13 +70,13 @@
       "parameters": {
         "jsCode": "// AJUSTE AQUI: coloque o seu Workspace/Team ID do ClickUp.\n// Encontre em app.clickup.com na URL (https://app.clickup.com/<TEAM_ID>/...)\n// ou via GET https://api.clickup.com/api/v2/team.\nconst teamId = '9011440385';\n\n// Seu member ID no ClickUp (ja fixado no node de HTTP como assignees[]).\nconst memberId = 158519491;\n\nreturn [{ json: { teamId, memberId } }];"
       },
-      "id": "fd1ed80b-cb2c-47a2-a054-20b9c7e02c78",
+      "id": "8f4d26a6-b714-45ea-b40e-c2e5b8591691",
       "name": "Config",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -800,
-        0
+        240,
+        -464
       ],
       "notes": "Ponto unico para configurar o teamId (Workspace ID). O memberId ja esta fixado no node de HTTP."
     },
@@ -84,27 +85,27 @@
         "fieldToSplitOut": "tasks",
         "options": {}
       },
-      "id": "2dcee16c-b1e0-4ac9-b37b-02731d19a53e",
+      "id": "5323ad2d-1e91-442a-9896-d7428dec59aa",
       "name": "Separar tarefas",
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -80,
-        0
+        912,
+        -464
       ],
       "notes": "A resposta do ClickUp vem como { tasks: [...] }. Este node quebra o array em um item por tarefa, para processar uma por uma daqui pra frente."
     },
     {
       "parameters": {
-        "jsCode": "// Monta, para cada tarefa do ClickUp, o comando do TaskWarrior.\n//\n// - Descricao = nome da tarefa.\n// - project:ClickUp e tags +clickup +work em toda tarefa.\n// - UDA client = nome da List do ClickUp (list.name).\n// - UDA clickup_id = id da tarefa no ClickUp (deduplicacao). Requer\n//   uda.clickup_id no taskrc (home/taskwarrior).\n// - O RESUMO do text_content (gerado pelo Ollama) vira uma annotation.\n// - due e priority mapeados do ClickUp.\n//\n// O comando usa aspas simples com escape seguro (sem injecao via SSH).\n\nfunction shSingleQuote(s) {\n  return \"'\" + String(s).replace(/'/g, \"'\\\\''\") + \"'\";\n}\n\n// text_content vem com \\n e entidades HTML (&nbsp;). Normaliza para uma\n// linha so e limita o tamanho (emails longos viram annotation gigante).\nfunction cleanText(s, max) {\n  let x = String(s || '')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\"')\n    .replace(/&#39;/g, \"'\")\n    .replace(/\\s+/g, ' ')\n    .trim();\n  if (x.length > max) x = x.slice(0, max).trimEnd() + '...';\n  return x;\n}\n\n// O node do Ollama substitui os campos do item, entao a tarefa original vem\n// de 'Filtrar novas' e e pareada com o resumo pela mesma POSICAO.\nconst tarefas = $('Filtrar novas').all();\nconst resumos = $input.all();\n\nfunction textoDoResumo(r) {\n  if (!r || !r.json || r.json.error) return '';\n  const j = r.json;\n  const v = (j.message && j.message.content) ?? j.text ?? j.content ?? '';\n  return String(v).replace(/\\s+/g, ' ').trim();\n}\n\nconst out = [];\nfor (let idx = 0; idx < tarefas.length; idx++) {\n  const t = tarefas[idx].json;\n  const id = t.id || '';\n  const name = (t.name || '(sem titulo)').replace(/[\\r\\n]+/g, ' ').trim();\n\n  // due date: epoch em ms (string) ou null.\n  let dueArg = '';\n  if (t.due_date) {\n    const ms = Number(t.due_date);\n    if (!Number.isNaN(ms) && ms > 0) {\n      const d = new Date(ms);\n      const yyyy = d.getFullYear();\n      const mm = String(d.getMonth() + 1).padStart(2, '0');\n      const dd = String(d.getDate()).padStart(2, '0');\n      dueArg = ` due:${yyyy}-${mm}-${dd}`;\n    }\n  }\n\n  // prioridade ClickUp (1 Urgent .. 4 Low) -> TaskWarrior (H/M/L)\n  let prioArg = '';\n  const pid = t.priority ? Number(t.priority.id) : null;\n  if (pid === 1 || pid === 2) prioArg = ' priority:H';\n  else if (pid === 3) prioArg = ' priority:M';\n  else if (pid === 4) prioArg = ' priority:L';\n\n  // client = nome da List do ClickUp\n  const listName = t.list && t.list.name ? String(t.list.name).replace(/[\\r\\n]+/g, ' ').trim() : '';\n  const clientArg = listName ? ` client:${shSingleQuote(listName)}` : '';\n\n  const descArg = shSingleQuote(name);\n  const idArg = id ? ` clickup_id:${shSingleQuote(id)}` : '';\n\n  const addCmd = `task add ${descArg} project:ClickUp +clickup +work${clientArg}${idArg}${prioArg}${dueArg}`;\n\n  // annotation com o text_content (se houver)\n  let note = cleanText(textoDoResumo(resumos[idx]), 500);\n  if (!cleanText(t.text_content, 1) || /^VAZIO\\.?$/i.test(note)) note = '';\n  const annotateCmd = id && note\n    ? `task rc.confirmation=no rc.verbose=nothing clickup_id:${shSingleQuote(id)} annotate ${shSingleQuote(note)}`\n    : '';\n\n  // Idempotente: so cria (e anota) se ainda nao existe tarefa com o clickup_id.\n  let command;\n  if (id) {\n    const existsFilter = `clickup_id:${shSingleQuote(id)}`;\n    const createCmd = annotateCmd ? `${addCmd} && ${annotateCmd}` : addCmd;\n    command = `if test \"$(task rc.verbose=nothing ${existsFilter} count 2>/dev/null)\" = \"0\"; then ${createCmd}; else echo 'ja existe: ${id}'; fi`;\n  } else {\n    command = addCmd;\n  }\n\n  // O shell de login do SSH na nobita e o fish, que nao entende `if ...; then`.\n  // Entao o script bash vai em base64 e e executado por `bash`: sem problema\n  // de sintaxe nem de aspas no fish.\n  const b64 = Buffer.from(command, 'utf8').toString('base64');\n  const sshCommand = `printf %s '${b64}' | base64 -d | bash`;\n\n  out.push({ json: { clickupId: id, name, client: listName, command, sshCommand } });\n}\nreturn out;"
+        "jsCode": "// Monta, para cada tarefa do ClickUp, o comando do TaskWarrior.\n//\n// - Descricao = nome da tarefa.\n// - project:ClickUp e tags +clickup +work em toda tarefa.\n// - UDA client = nome da List do ClickUp (list.name).\n// - UDA clickup_id = id da tarefa no ClickUp (deduplicacao). Requer\n//   uda.clickup_id no taskrc (home/taskwarrior).\n// - O RESUMO do text_content (gerado pelo Ollama) vira uma annotation.\n// - due e priority mapeados do ClickUp.\n//\n// O comando usa aspas simples com escape seguro (sem injecao via SSH).\n\nfunction shSingleQuote(s) {\n  return \"'\" + String(s).replace(/'/g, \"'\\\\''\") + \"'\";\n}\n\n// text_content vem com \\n e entidades HTML (&nbsp;). Normaliza para uma\n// linha so e limita o tamanho (emails longos viram annotation gigante).\nfunction cleanText(s, max) {\n  let x = String(s || '')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\"')\n    .replace(/&#39;/g, \"'\")\n    .replace(/\\s+/g, ' ')\n    .trim();\n  if (x.length > max) x = x.slice(0, max).trimEnd() + '...';\n  return x;\n}\n\n// O node do Ollama substitui os campos do item, entao a tarefa original vem\n// de 'Filtrar novas' e e pareada com o resumo pela mesma POSICAO.\nconst tarefas = $('Filtrar novas').all();\nconst resumos = $input.all();\n\nfunction textoDoResumo(r) {\n  if (!r || !r.json || r.json.error) return '';\n  const j = r.json;\n  const v = (j.message && j.message.content) ?? j.text ?? j.content ?? '';\n  return String(v).replace(/\\s+/g, ' ').trim();\n}\n\nconst out = [];\nfor (let idx = 0; idx < tarefas.length; idx++) {\n  const t = tarefas[idx].json;\n  const id = t.id || '';\n  const name = (t.name || '(sem titulo)').replace(/[\\r\\n]+/g, ' ').trim();\n\n  // due date: epoch em ms (string) ou null.\n  let dueArg = '';\n  if (t.due_date) {\n    const ms = Number(t.due_date);\n    if (!Number.isNaN(ms) && ms > 0) {\n      const d = new Date(ms);\n      const yyyy = d.getFullYear();\n      const mm = String(d.getMonth() + 1).padStart(2, '0');\n      const dd = String(d.getDate()).padStart(2, '0');\n      dueArg = ` due:${yyyy}-${mm}-${dd}`;\n    }\n  }\n\n  // prioridade ClickUp (1 Urgent .. 4 Low) -> TaskWarrior (H/M/L)\n  let prioArg = '';\n  const pid = t.priority ? Number(t.priority.id) : null;\n  if (pid === 1 || pid === 2) prioArg = ' priority:H';\n  else if (pid === 3) prioArg = ' priority:M';\n  else if (pid === 4) prioArg = ' priority:L';\n\n  // client = nome da List do ClickUp\n  const listName = t.list && t.list.name ? String(t.list.name).replace(/[\\r\\n]+/g, ' ').trim() : '';\n  const clientArg = listName ? ` client:${shSingleQuote(listName)}` : '';\n\n  const descArg = shSingleQuote(name);\n  const idArg = id ? ` clickup_id:${shSingleQuote(id)}` : '';\n\n  let project_name =  \"ClickUp\";\n  if (name.startsWith(\"Ticket\")) project_name = \"Suporte\";\n  \n  const addCmd = `task add ${descArg} project:${project_name} +clickup +work${clientArg}${idArg}${prioArg}${dueArg}`;\n\n  // annotation com o text_content (se houver)\n  let note = cleanText(textoDoResumo(resumos[idx]), 500);\n  if (!cleanText(t.text_content, 1) || /^VAZIO\\.?$/i.test(note)) note = '';\n  const annotateCmd = id && note\n    ? `task rc.confirmation=no rc.verbose=nothing clickup_id:${shSingleQuote(id)} annotate ${shSingleQuote(note)}`\n    : '';\n\n  // Idempotente: so cria (e anota) se ainda nao existe tarefa com o clickup_id.\n  let command;\n  if (id) {\n    const existsFilter = `clickup_id:${shSingleQuote(id)}`;\n    const createCmd = annotateCmd ? `${addCmd} && ${annotateCmd}` : addCmd;\n    command = `if test \"$(task rc.verbose=nothing ${existsFilter} count 2>/dev/null)\" = \"0\"; then ${createCmd}; else echo 'ja existe: ${id}'; fi`;\n  } else {\n    command = addCmd;\n  }\n\n  // O shell de login do SSH na nobita e o fish, que nao entende `if ...; then`.\n  // Entao o script bash vai em base64 e e executado por `bash`: sem problema\n  // de sintaxe nem de aspas no fish.\n  const b64 = Buffer.from(command, 'utf8').toString('base64');\n  const sshCommand = `printf %s '${b64}' | base64 -d | bash`;\n\n  out.push({ json: { clickupId: id, name, client: listName, command, sshCommand } });\n}\nreturn out;"
       },
-      "id": "e9ebfe4e-ed9b-43bf-ba40-537c778e93c2",
+      "id": "371de00d-56ae-4e4e-9fe6-0bbfe7f1d0c2",
       "name": "Montar comando task",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        640,
-        0
+        1712,
+        -464
       ],
       "notes": "Monta o comando do TaskWarrior para cada tarefa NOVA: tags +clickup +work, UDA client = list.name, UDA clickup_id e annotation com o resumo do Ollama (pareado por posicao com 'Filtrar novas'). Requer uda.clickup_id e uda.client no taskrc (home/taskwarrior).\n\nO campo `command` e o script bash legivel; `sshCommand` e o que o SSH executa (base64 -> bash), porque o shell de login na nobita e o fish."
     },
@@ -114,13 +115,13 @@
         "command": "={{ $json.sshCommand }}",
         "cwd": "/home/terabytes"
       },
-      "id": "8b4d9d31-f372-45e0-8082-8af286cd2432",
+      "id": "e0a14a12-3e9b-443a-a4f4-553b9d7ec53a",
       "name": "SSH: task add no nobita",
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        880,
-        0
+        1936,
+        -464
       ],
       "credentials": {
         "sshPrivateKey": {
@@ -136,13 +137,13 @@
         "command": "task rc.verbose=nothing +clickup export",
         "cwd": "/home/terabytes"
       },
-      "id": "a1b2c3d4-0007-4000-8000-000000000007",
+      "id": "4bb8454c-d6f1-43cc-9989-b75cb0be0e46",
       "name": "SSH: ids existentes",
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        -560,
-        0
+        464,
+        -464
       ],
       "credentials": {
         "sshPrivateKey": {
@@ -156,13 +157,13 @@
       "parameters": {
         "jsCode": "// Mantem so as tarefas do ClickUp que ainda NAO existem no TaskWarrior,\n// para o Ollama resumir apenas as novas (e nao tudo a cada hora).\nconst raw = ($('SSH: ids existentes').first().json.stdout || '').trim();\nlet existentes;\ntry {\n  const tasks = raw ? JSON.parse(raw) : [];\n  existentes = new Set(tasks.map((t) => t.clickup_id).filter(Boolean));\n} catch (e) {\n  throw new Error('Nao consegui ler o export do TaskWarrior: ' + raw.slice(0, 200));\n}\nreturn $input.all().filter((i) => i.json.id && !existentes.has(i.json.id));"
       },
-      "id": "a1b2c3d4-0008-4000-8000-000000000008",
+      "id": "b0dec521-bbce-47ec-a5b9-332efd658f58",
       "name": "Filtrar novas",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        160,
-        0
+        1136,
+        -464
       ],
       "notes": "Descarta tarefas cujo id ja esta em clickup_id no TaskWarrior. Se nao sobrar nada, o fluxo para aqui (esperado)."
     },
@@ -189,21 +190,21 @@
           "temperature": 0
         }
       },
-      "id": "a1b2c3d4-0009-4000-8000-000000000009",
+      "id": "94b42335-9154-4ea6-9d40-1da413f2ffc0",
       "name": "Ollama: resumir text_content",
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        400,
-        0
+        1360,
+        -464
       ],
-      "onError": "continueRegularOutput",
       "credentials": {
         "openAiApi": {
           "id": "GMCPJ2fIcXncxJFF",
           "name": "OpenAI Ollama account"
         }
       },
+      "onError": "continueRegularOutput",
       "notes": "Resume o text_content de cada tarefa NOVA com o Ollama local (gemma3:4b, mesma credential do workflow do Gmail). Este node substitui os campos do item pela resposta do modelo; por isso 'Montar comando task' le a tarefa original de 'Filtrar novas' pela mesma posicao. Se o Ollama falhar (onError continua), a tarefa e criada sem annotation."
     }
   ],
@@ -298,12 +299,13 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "availableInMCP": true
   },
-  "versionId": "c963782a-f857-49e6-8678-188832474650",
+  "versionId": "a7343b5f-e990-4f9d-9964-0a05395a3817",
   "meta": {
     "instanceId": "4cd3e6e5c61a0c36d20565266deb9e46caed1d457d948f567a26e5559e04a956"
   },

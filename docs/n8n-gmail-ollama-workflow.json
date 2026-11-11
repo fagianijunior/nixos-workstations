@@ -372,26 +372,6 @@
     },
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "hours"
-            }
-          ]
-        }
-      },
-      "id": "3fca69cf-73af-444e-bfae-3660a89d1d52",
-      "name": "Todo dia 13:00",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.2,
-      "position": [
-        -1024,
-        288
-      ],
-      "notes": "Dispara todos os dias as 13:00, timezone America/Fortaleza (definido no modulo NixOS services.n8n em GENERIC_TIMEZONE)."
-    },
-    {
-      "parameters": {
         "modelId": {
           "__rl": true,
           "value": "gemma3:4b",
@@ -490,6 +470,27 @@
       ],
       "id": "84246007-c363-4e87-bbad-50f74b009645",
       "name": "Trabalho: Filtra importantes"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 7-19 * * *"
+            }
+          ]
+        }
+      },
+      "id": "3fca69cf-73af-444e-bfae-3660a89d1d52",
+      "name": "De hora em hora",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1024,
+        288
+      ],
+      "notes": "Dispara todos os dias as 13:00, timezone America/Fortaleza (definido no modulo NixOS services.n8n em GENERIC_TIMEZONE)."
     }
   ],
   "pinData": {},
@@ -657,22 +658,6 @@
         ]
       ]
     },
-    "Todo dia 13:00": {
-      "main": [
-        [
-          {
-            "node": "Trabalho: buscar inbox",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Pessoal: buscar inbox",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Importancia": {
       "main": [
         [
@@ -716,14 +701,31 @@
           }
         ]
       ]
+    },
+    "De hora em hora": {
+      "main": [
+        [
+          {
+            "node": "Trabalho: buscar inbox",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Pessoal: buscar inbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "availableInMCP": true
   },
-  "versionId": "b650ee17-2b4f-495f-999c-1ebd3d1951d0",
+  "versionId": "2d679968-185a-4970-bae2-93e3accdd8a3",
   "meta": {
     "instanceId": "4cd3e6e5c61a0c36d20565266deb9e46caed1d457d948f567a26e5559e04a956"
   },
