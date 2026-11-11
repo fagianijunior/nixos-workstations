@@ -106,9 +106,9 @@ Rectangle {
                 text:           "⚠"
                 color:          "#f38ba8"
                 font.pixelSize: 11
-                ToolTip.visible: hovered
+                ToolTip.visible: errorHover.containsMouse
                 ToolTip.text:   timeData.errorMessage
-                MouseArea { anchors.fill: parent; hoverEnabled: true }
+                MouseArea { id: errorHover; anchors.fill: parent; hoverEnabled: true }
             }
 
             Text {
