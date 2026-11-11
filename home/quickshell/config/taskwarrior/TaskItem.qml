@@ -37,8 +37,9 @@ Rectangle {
     
     color: getTaskBackgroundColor(task)  // Dynamic color based on status
     radius: 4
-    border.color: isTaskActive(task) ? "#89b4fa" : "#45475a"  // Blue border for active tasks
-    border.width: isTaskActive(task) ? 2 : 1
+    border.color: isTaskBlocked(task) ? "#f38ba8"              // Red border for blocked tasks
+                  : isTaskActive(task) ? "#89b4fa" : "#45475a"  // Blue border for active tasks
+    border.width: (isTaskBlocked(task) || isTaskActive(task)) ? 2 : 1
     
     implicitHeight: 40  // Reduced from 60
     
@@ -80,12 +81,20 @@ Rectangle {
         return task && task.start !== undefined && task.start !== ""
     }
     
+    // Check if task is blocked (paused). The `blocked` tag maps to "pausado" in ClickUp.
+    function isTaskBlocked(task) {
+        return task && task.status !== "completed" && task.tags !== undefined
+               && task.tags.indexOf("blocked") !== -1
+    }
+    
     // Get background color based on task status
     function getTaskBackgroundColor(task) {
         if (!task) return Qt.rgba(0.2, 0.2, 0.2, 0.5)
         
         if (task.status === "completed") {
             return Qt.rgba(0.4, 0.7, 0.4, 0.3)  // Green tint for completed
+        } else if (isTaskBlocked(task)) {
+            return Qt.rgba(0.95, 0.55, 0.66, 0.3)  // Red tint for blocked
         } else if (isTaskActive(task)) {
             return Qt.rgba(0.5, 0.6, 0.9, 0.3)  // Blue tint for active
         } else if (task.status === "waiting") {
@@ -137,6 +146,43 @@ Rectangle {
             // Format as MM/DD
             return (month < 10 ? "0" : "") + month + "/" + (day < 10 ? "0" : "") + day
         }
+    }
+    
+    // Format a Taskwarrior timestamp (20240120T000000Z, UTC) as local YYYY-MM-DD
+    function formatFullDate(ts) {
+        if (!ts || ts.length < 8) return ""
+        let d
+        if (ts.length >= 15) {
+            d = new Date(Date.UTC(parseInt(ts.substring(0, 4)), parseInt(ts.substring(4, 6)) - 1,
+                                  parseInt(ts.substring(6, 8)), parseInt(ts.substring(9, 11)),
+                                  parseInt(ts.substring(11, 13)), parseInt(ts.substring(13, 15))))
+        } else {
+            d = new Date(parseInt(ts.substring(0, 4)), parseInt(ts.substring(4, 6)) - 1, parseInt(ts.substring(6, 8)))
+        }
+        if (isNaN(d.getTime())) return ""
+        const mm = d.getMonth() + 1
+        const dd = d.getDate()
+        return d.getFullYear() + "-" + (mm < 10 ? "0" : "") + mm + "-" + (dd < 10 ? "0" : "") + dd
+    }
+    
+    // One "label: value" line per available detail, shown in the tooltip
+    function getTooltipDetails(task) {
+        if (!task) return ""
+        const lines = []
+        
+        let state = task.status === "completed" ? "concluída"
+                  : isTaskBlocked(task) ? "bloqueada (pausado no ClickUp)"
+                  : isTaskActive(task) ? "em andamento"
+                  : task.status === "waiting" ? "aguardando" : "pendente"
+        lines.push("Estado: " + state)
+        
+        if (task.project) lines.push("Projeto: " + task.project)
+        if (task.client) lines.push("Cliente: " + task.client)
+        if (task.clickup_id) lines.push("ClickUp: " + task.clickup_id)
+        if (task.due) {
+            lines.push("Vencimento: " + formatFullDate(task.due) + " (" + formatDueDate(task.due) + ")")
+        }
+        return lines.join("\n")
     }
     
     // Check if task is overdue
@@ -377,6 +423,27 @@ Rectangle {
                         wrapMode: Text.WordWrap
                         width: parent.width
                     }
+                    
+                    // Details that do not fit in the card: state, project, client,
+                    // ClickUp id, full due date and every tag
+                    Text {
+                        visible: text !== ""
+                        text: taskItem.getTooltipDetails(taskItem.task)
+                        color: "#a6adc8"
+                        font.pixelSize: 10
+                        wrapMode: Text.WordWrap
+                        width: parent.width
+                    }
+                    
+                    Text {
+                        visible: taskItem.task && taskItem.task.tags !== undefined && taskItem.task.tags.length > 0
+                        text: taskItem.task && taskItem.task.tags
+                              ? taskItem.task.tags.map(function(t) { return "#" + t }).join("  ") : ""
+                        color: "#89b4fa"
+                        font.pixelSize: 10
+                        wrapMode: Text.WordWrap
+                        width: parent.width
+                    }
                 }
             }
             
@@ -385,14 +452,30 @@ Rectangle {
                 Layout.fillWidth: true
                 spacing: 6  // Reduced from 8
                 
-                // Tags display
-                Repeater {
-                    model: taskItem.task && taskItem.task.tags ? taskItem.task.tags : []
+                // Tags display: clipped to the available width so many tags
+                // never push the due date (or the buttons) out of the card
+                Item {
+                    id: tagsClip
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: tagsRow.implicitHeight
+                    clip: true
                     
-                    Text {
-                        text: "#" + modelData
-                        color: "#89b4fa"
-                        font.pixelSize: 8  // Reduced from 9
+                    Row {
+                        id: tagsRow
+                        spacing: 6
+                        
+                        Repeater {
+                            model: taskItem.task && taskItem.task.tags ? taskItem.task.tags : []
+                            
+                            Text {
+                                // Hide a tag that does not fit entirely, instead of
+                                // showing it cut in the middle (e.g. "#block")
+                                visible: x + width <= tagsClip.width
+                                text: "#" + modelData
+                                color: "#89b4fa"
+                                font.pixelSize: 8  // Reduced from 9
+                            }
+                        }
                     }
                 }
                 
@@ -403,42 +486,78 @@ Rectangle {
                     color: taskItem.task && taskItem.isOverdue(taskItem.task.due) ? "#f38ba8" : "#a6adc8"
                     font.pixelSize: 8  // Reduced from 9
                 }
+            }
+        }
+        
+        // Action buttons: fixed to the right edge, outside the text column,
+        // so they stay visible regardless of how many tags the task has
+        Row {
+            Layout.alignment: Qt.AlignVCenter
+            spacing: 2
+            
+            // Timer control button (▶ start / ⏹ stop)
+            Rectangle {
+                id: timerButton
+                visible: taskItem.task && taskItem.task.status !== "completed" && taskItem.task.status !== "deleted"
+                width: 24
+                height: 24
+                radius: 12
+                color: timerButtonMouseArea.containsMouse ? "#45475a" : "transparent"
+            
+                Text {
+                    anchors.centerIn: parent
+                    text: isTaskActive(taskItem.task) ? "⏹" : "▶"
+                    color: "#a6e3a1"
+                    font.pixelSize: 10
+                }
+            
+                MouseArea {
+                    id: timerButtonMouseArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
                 
-                // Timer control button (▶ start / ⏹ stop)
-                Rectangle {
-                    id: timerButton
-                    visible: taskItem.task && taskItem.task.status !== "completed" && taskItem.task.status !== "deleted"
-                    Layout.preferredWidth: 24
-                    Layout.preferredHeight: 24
-                    radius: 12
-                    color: timerButtonMouseArea.containsMouse ? "#45475a" : "transparent"
-                    
-                    Text {
-                        anchors.centerIn: parent
-                        text: isTaskActive(taskItem.task) ? "⏹" : "▶"
-                        color: "#a6e3a1"
-                        font.pixelSize: 10
-                    }
-                    
-                    MouseArea {
-                        id: timerButtonMouseArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        
-                        onClicked: {
-                            if (isTaskActive(taskItem.task)) {
-                                taskItem.taskManager.stopTask(taskItem.task.uuid)
-                            } else {
-                                taskItem.taskManager.startTask(taskItem.task.uuid)
-                            }
+                    onClicked: {
+                        if (isTaskActive(taskItem.task)) {
+                            taskItem.taskManager.stopTask(taskItem.task.uuid)
+                        } else {
+                            taskItem.taskManager.startTask(taskItem.task.uuid)
                         }
                     }
                 }
+            }
+        
+            // Blocked toggle button (⊘): adds/removes the `blocked` tag
+            Rectangle {
+                id: blockedButton
+                visible: taskItem.task && taskItem.task.status !== "completed" && taskItem.task.status !== "deleted"
+                width: 24
+                height: 24
+                radius: 12
+                color: blockedButtonMouseArea.containsMouse ? "#45475a" : "transparent"
+            
+                Text {
+                    anchors.centerIn: parent
+                    text: "⊘"
+                    color: taskItem.isTaskBlocked(taskItem.task) ? "#f38ba8" : "#6c7086"
+                    font.pixelSize: 12
+                }
+            
+                MouseArea {
+                    id: blockedButtonMouseArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
                 
-                // Spacer
-                Item {
-                    Layout.fillWidth: true
+                    onClicked: {
+                        if (!taskItem.task || !taskItem.task.uuid || !taskItem.taskManager) {
+                            console.error("Cannot toggle blocked: task or TaskManager not available")
+                            return
+                        }
+                        taskItem.taskManager.setTaskBlocked(
+                            taskItem.task.uuid,
+                            !taskItem.isTaskBlocked(taskItem.task))
+                    }
                 }
             }
         }

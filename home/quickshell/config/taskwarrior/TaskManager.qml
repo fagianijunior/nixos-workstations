@@ -161,6 +161,28 @@ Item {
         taskModifyProcess.running = true
     }
     
+    // Toggle the `blocked` tag on a task.
+    // The Taskwarrior ClickUp hook maps +blocked to the "pausado" status in ClickUp,
+    // and -blocked back to "em progresso" (if started) or "planejando".
+    // @param uuid: Task UUID to modify
+    // @param blocked: true to add +blocked, false to remove it
+    function setTaskBlocked(uuid, blocked) {
+        if (!uuid || uuid.trim() === "") {
+            console.error("setTaskBlocked: Invalid UUID provided")
+            taskManager.errorOccurred("Invalid task UUID")
+            taskManager.taskModified("", false)
+            return
+        }
+
+        taskModifyProcess.modifyingUuid = uuid
+        const cmd = ["task", "rc.confirmation:off", uuid, "modify", blocked ? "+blocked" : "-blocked"]
+
+        console.log("Executing task modification:", cmd.join(" "))
+
+        taskModifyProcess.command = cmd
+        taskModifyProcess.running = true
+    }
+
     // Get the number of tasks for a specific client
     // @param clientName: Name of the client
     // @return: Number of tasks for that client
