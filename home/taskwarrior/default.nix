@@ -20,6 +20,15 @@
     executable = true;
   };
 
+  # Hook ClickUp: ao concluir uma task com clickup_id, soma os intervalos do
+  # Timewarrior e envia ao webhook do n8n (que cria os time entries no ClickUp).
+  # O nome precisa vir DEPOIS de on-modify.timewarrior na ordem alfabetica, para
+  # o intervalo ativo ja estar fechado quando o hook ler o timew.
+  home.file.".local/share/task/hooks/on-modify.timewarrior-clickup" = {
+    source     = ./on-modify.timewarrior-clickup.py;
+    executable = true;
+  };
+
   # Garantir que o diretório de dados do Timewarrior exista
   home.file.".local/share/timewarrior/.keep".text = "";
 

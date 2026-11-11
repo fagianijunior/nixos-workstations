@@ -1,0 +1,135 @@
+{
+  "name": "TaskWarrior -> ClickUp (status e tempo)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "clickup-timelog",
+        "options": {}
+      },
+      "id": "daac4f5a-f09f-404d-8ef2-1c7979eceba0",
+      "name": "Webhook: evento da task",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        960,
+        320
+      ],
+      "webhookId": "clickup-timelog",
+      "notes": "Chamado pelo hook ~/.local/share/task/hooks/on-modify.timewarrior-clickup (home/taskwarrior) a cada start, stop, bloqueio ou conclusao de uma task com clickup_id.\n\nCorpo: { event: start|stop|blocked|done, clickupId, uuid, description, intervals: [{ start (ms), duration (ms) }] }. 'intervals' so vem preenchido em done.\n\nURL de producao: http://localhost:5678/webhook/clickup-timelog (so responde com o workflow ATIVO; /webhook-test/ so vale enquanto voce clica em 'Listen for test event'). Se o n8n nao rodar na mesma maquina do task, defina CLICKUP_TIMELOG_WEBHOOK no ambiente do usuario."
+    },
+    {
+      "parameters": {
+        "url": "=https://api.clickup.com/api/v2/task/{{ $json.body.clickupId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "options": {}
+      },
+      "id": "e4bb1482-b29e-4b31-aaff-92a55684f121",
+      "name": "ClickUp: buscar card",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        320
+      ],
+      "credentials": {
+        "clickUpApi": {
+          "id": "6Wlr0VlkHHKuzqD6",
+          "name": "ClickUp account"
+        }
+      },
+      "notes": "GET /api/v2/task/{id}. Traz o nome e os custom_fields do card, para saber se ele veio do Zammad."
+    },
+    {
+      "parameters": {
+        "jsCode": "// AJUSTE AQUI: nomes EXATOS dos status na sua List do ClickUp.\nconst STATUS = {\n  start: 'em progresso',\n  stop: 'planejando',\n  blocked: 'pausado',\n  done: 'finalizado',\n};\nconst TEAM_ID = '9011440385';\nconst MEMBER_ID = 158519491;\n\nconst ev = $('Webhook: evento da task').first().json.body;\nconst card = $input.first().json;\n\n// Identifica se o card é um ticket do Zammad\nconst ticketField = (card.custom_fields || []).find((f) => f.name === 'Ticket');\nconst hasTicketLink = !!ticketField && ticketField.value != null && String(ticketField.value).trim() !== '';\nconst isTicketName = /^Ticket#/i.test(card.name || '');\nconst isTicket = hasTicketLink || isTicketName;\n\nconst status = STATUS[ev.event];\nif (!status) throw new Error('Evento desconhecido: ' + ev.event);\n\nconst out = [];\n\n// Salva as horas SOMENTE no 'done', para QUALQUER card (inclusive tickets do Zammad)\nif (ev.event === 'done') {\n  for (const i of ev.intervals || []) {\n    out.push({ json: {\n      method: 'POST',\n      url: `https://api.clickup.com/api/v2/team/${TEAM_ID}/time_entries`,\n      body: {\n        tid: String(ev.clickupId),\n        start: Number(i.start),\n        duration: Number(i.duration),\n        description: `${ev.description} (TaskWarrior ${String(ev.uuid || '').slice(0, 8)})`,\n        billable: false,\n        assignee: MEMBER_ID,\n      },\n    } });\n  }\n}\n\n// Altera o status APENAS se o card NÃO for um ticket\nif (!isTicket) {\n  out.push({ json: {\n    method: 'PUT',\n    url: `https://api.clickup.com/api/v2/task/${ev.clickupId}`,\n    body: { status },\n  } });\n}\n\nreturn out;"
+      },
+      "id": "5746331f-fce6-451a-955a-56c29ba0b204",
+      "name": "Decidir acoes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        320
+      ],
+      "notes": "1) Descarta cards do Zammad (campo 'Ticket' com link, ou nome 'Ticket#...'); sem itens de saida o fluxo para aqui, que e o esperado.\n2) Mapeia o evento para o status do ClickUp (tabela STATUS no topo do codigo).\n3) Em done, gera um time entry por intervalo do timew e, por ultimo, a troca de status.\n\nCada item de saida e uma chamada de API pronta (method, url, body) executada pelo node seguinte."
+    },
+    {
+      "parameters": {
+        "method": "={{ $json.method }}",
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "id": "2063b2ef-2661-44ad-842e-f8341e07f298",
+      "name": "ClickUp: executar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        320
+      ],
+      "credentials": {
+        "clickUpApi": {
+          "id": "6Wlr0VlkHHKuzqD6",
+          "name": "ClickUp account"
+        }
+      },
+      "notes": "Executa cada chamada montada em 'Decidir acoes': POST /team/{team_id}/time_entries (tempo) e PUT /task/{id} (status).\n\nUsa HTTP Request porque o node nativo do ClickUp nao cobre time tracking (nao verificado na sua versao do n8n)."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook: evento da task": {
+      "main": [
+        [
+          {
+            "node": "ClickUp: buscar card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ClickUp: buscar card": {
+      "main": [
+        [
+          {
+            "node": "Decidir acoes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decidir acoes": {
+      "main": [
+        [
+          {
+            "node": "ClickUp: executar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "bc1736f8-caaa-46cf-bbf8-b58ba0f4a535",
+  "meta": {
+    "instanceId": "4cd3e6e5c61a0c36d20565266deb9e46caed1d457d948f567a26e5559e04a956"
+  },
+  "nodeGroups": [],
+  "id": "2ETWXBpY361XuqWa",
+  "tags": []
+}
