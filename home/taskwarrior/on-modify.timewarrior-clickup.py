@@ -5,8 +5,9 @@ Eventos detectados (so para tasks com UDA clickup_id):
   start    task start               -> n8n muda o status para "em progresso"
   stop     task stop                -> n8n muda o status para "planejando"
   blocked  depends/+blocked novo    -> n8n muda o status para "pausado"
-  done     task done                -> n8n muda para "finalizado" e registra o
-                                       tempo (intervalos do TimeWarrior)
+  done     task done                -> n8n muda para "finalizado", registra o
+                                       tempo (intervalos do TimeWarrior) e
+                                       publica as annotations como comentario
 Sair do bloqueio vira `start` (se a task esta iniciada) ou `stop`.
 
 Quem decide o status do ClickUp, e quem identifica os cards que vieram do Zammad
@@ -44,6 +45,8 @@ WEBHOOK_URL = os.environ.get(
 TIMEOUT_S = 5
 # Intervalos menores que isso (ms) sao ignorados (start/stop acidental).
 MIN_DURATION_MS = 1000
+# Annotations criadas ate N segundos apos a task sao o resumo automatico do sync.
+INITIAL_ANNOTATION_WINDOW_S = 120
 # Cards criados pelo Zammad comecam assim e sao gerenciados la.
 ZAMMAD_PREFIX = "Ticket#"
 
@@ -124,6 +127,27 @@ def collect_intervals(description, end_hint):
     return intervals
 
 
+def collect_annotations(task):
+    """Annotations feitas pelo usuario, para virarem comentarios no ClickUp.
+
+    O workflow ClickUp -> TaskWarrior cria a task e logo em seguida anota o resumo
+    do text_content do proprio card. Esse resumo ja esta no card, entao e ignorado:
+    annotations criadas em ate INITIAL_ANNOTATION_WINDOW_S segundos apos a criacao
+    da task nao sao enviadas.
+    """
+    created = parse_timew_ts(task["entry"]) if task.get("entry") else None
+    out = []
+    for a in task.get("annotations") or []:
+        text = (a.get("description") or "").strip()
+        if not text or not a.get("entry"):
+            continue
+        at = parse_timew_ts(a["entry"])
+        if created and (at - created).total_seconds() <= INITIAL_ANNOTATION_WINDOW_S:
+            continue
+        out.append({"entry": int(at.timestamp() * 1000), "description": text})
+    return out
+
+
 def main():
     old = json.loads(sys.stdin.readline())
     new = json.loads(sys.stdin.readline())
@@ -147,7 +171,9 @@ def main():
         return
 
     intervals = []
+    annotations = []
     if event == "done":
+        annotations = collect_annotations(new)
         end_hint = parse_timew_ts(new["end"]) if new.get("end") else None
         intervals = collect_intervals(description, end_hint)
         if not intervals:
@@ -159,6 +185,7 @@ def main():
         "uuid": new.get("uuid"),
         "description": description,
         "intervals": intervals,
+        "annotations": annotations,
     }
     req = urllib.request.Request(
         WEBHOOK_URL,
@@ -167,7 +194,10 @@ def main():
         method="POST",
     )
     with urllib.request.urlopen(req, timeout=TIMEOUT_S) as resp:
-        extra = f", {len(intervals)} intervalo(s)" if event == "done" else ""
+        extra = (
+            f", {len(intervals)} intervalo(s), {len(annotations)} comentario(s)"
+            if event == "done" else ""
+        )
         warn(f"evento '{event}' enviado ao n8n (HTTP {resp.status}{extra})")
 
 

@@ -152,6 +152,7 @@
     lm_sensors
     terraform-mcp-server
     pack
+    aidlc # no PATH do sistema para hooks iniciados fora de um terminal
   ];
 
   virtualisation.docker = {

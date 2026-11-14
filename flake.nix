@@ -20,6 +20,7 @@
         (import ./overlays/clickup.nix)
         (import ./overlays/mcp-server-taskwarrior.nix)
         (import ./overlays/aidlc.nix)
+        # (import ./overlays/taskwarrior-sqlite.nix)
       ];
       pkgs = import nixpkgs {
         inherit system overlays;

@@ -63,6 +63,8 @@
 #   nix build '.#nixosConfigurations.nobita.pkgs.aidlc'
 #   ./result/bin/aidlc --version        # esperado: "aidlc <ver> (runtime <ver>)"
 #   ./result/bin/aidlc config --help    # deve mostrar o comando real, não o Bun
+#   echo '{}' | ./result/bin/aidlc engine adapter kiro-ide person-message; echo $?
+#                                       # esperado: 0 (não "not available in this install")
 #
 # CONFIGURAÇÃO POR PROJETO (inalterada)
 # -------------------------------------
@@ -110,7 +112,7 @@ in
     dontBuild = true;
 
     # SEM autoPatchelfHook de propósito (veja ATENÇÃO 2 no topo).
-    nativeBuildInputs = [ final.makeWrapper ];
+    nativeBuildInputs = [ ];
 
     installPhase = ''
       runHook preInstall
@@ -148,12 +150,51 @@ in
         || (echo "ERRO: binário versionado não foi instalado" >&2; exit 1)
 
       # O launcher shell que o install-apply deixou (se deixou) chama o binário
-      # versionado DIRETAMENTE (segfault no NixOS). Trocamos por um wrapper nosso
-      # que invoca o binário pelo loader do glibc.
+      # versionado do store e é descartado; criamos o nosso abaixo.
+      #
+      # ATENÇÃO 3: NÃO invocar o binário em runtime pelo ld.so explícito.
+      # Rodando como `ld-linux.so <bin>`, o Bun vê process.execPath = o LOADER.
+      # O engine (a) resolve hooks/adapters em dirname(execPath)/runtime/<harness>/
+      # e (b) relança a si mesmo como `execPath engine ...` nos subprocessos dos
+      # hooks. Com o loader, (a) dá "not available in this install" e (b) roda
+      # o ld.so sozinho -> exit 127. AIDLC_COMPILED_EXECUTABLE não resolve: o
+      # engine o sobrescreve com process.execPath.
+      # Em runtime o binário roda DIRETO, via nix-ld (programs.nix-ld.enable =
+      # true em modules/common/default.nix fornece /lib64/ld-linux-x86-64.so.2).
+      # Só o build (sandbox, sem /lib64) usa o loader explícito.
+      #
+      # ATENÇÃO 4: a pasta do binário NÃO pode ser o /nix/store. O `aidlc
+      # config` copia dirname(execPath)/runtime para um tmp e depois o apaga;
+      # vinda do store, a cópia herda diretórios 555 e o rm falha com EACCES.
+      # (E não use AIDLC_RUNTIME_ROOT: o config acha duas fontes do mesmo
+      # harness e recusa ambas, ou escolhe a distribuição errada.)
+      #
+      # Solução: o wrapper monta, uma vez por build ($out), uma pasta gravável
+      # em ~/.cache/aidlc/<hash-do-out>/ com cópia do binário (~110 MB) e da
+      # runtime (~22 MB) e executa essa cópia. Builds antigos podem ser
+      # apagados de ~/.cache/aidlc/ sem risco (são recriados sob demanda).
+      verDir="$out/share/aidlc/versions/${version}"
       rm -f $out/bin/aidlc
-      makeWrapper ${loader} $out/bin/aidlc \
-        --add-flags "--library-path ${libPath}" \
-        --add-flags "$out/share/aidlc/versions/${version}/aidlc"
+      cat > $out/bin/aidlc <<EOF
+#!${final.runtimeShell}
+set -e
+cache="\''${XDG_CACHE_HOME:-\$HOME/.cache}/aidlc/$(basename $out)"
+if [ ! -f "\$cache/.complete" ]; then
+  tmp="\$cache.tmp.\$\$"
+  ${final.coreutils}/bin/rm -rf "\$tmp"
+  ${final.coreutils}/bin/mkdir -p "\$tmp"
+  ${final.coreutils}/bin/cp -r --no-preserve=mode "$verDir/runtime" "\$tmp/runtime"
+  ${final.coreutils}/bin/install -m755 "$verDir/aidlc" "\$tmp/aidlc"
+  ${final.coreutils}/bin/touch "\$tmp/.complete"
+  ${final.coreutils}/bin/rm -rf "\$cache"
+  ${final.coreutils}/bin/mv "\$tmp" "\$cache" 2>/dev/null || ${final.coreutils}/bin/rm -rf "\$tmp"
+fi
+# Bibliotecas para o nix-ld, caso a sessão (ex.: Kiro aberto pelo desktop) não
+# tenha NIX_LD_LIBRARY_PATH.
+export NIX_LD_LIBRARY_PATH="\''${NIX_LD_LIBRARY_PATH:-${libPath}}"
+exec "\$cache/aidlc" "\$@"
+EOF
+      chmod 755 $out/bin/aidlc
 
       runHook postInstall
     '';

@@ -900,7 +900,6 @@ in
     github-mcp-server
     gh
     awscli2
-    aidlc
     # opencode
     # opencode-desktop
   ];

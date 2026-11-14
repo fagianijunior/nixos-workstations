@@ -99,6 +99,13 @@ let
           "AWS_REGION=us-east-1"
         ];
       }
+      # cloudflare-api: servidor MCP remoto da Cloudflare (streamable-http), sem
+      # command/args. Autenticação via OAuth no primeiro uso.
+      {
+        name = "cloudflare-api";
+        type = "streamable-http";
+        url = "https://mcp.cloudflare.com/mcp";
+      }
     ];
   };
 in

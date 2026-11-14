@@ -101,6 +101,11 @@ let
           N8N_API_KEY = "YOUR_N8N_API_KEY";
         };
       };
+      cloudflare-api = {
+        type = "http";
+        url = "https://mcp.cloudflare.com/mcp";
+        disabled = true;
+      };
     };
   };
 in
