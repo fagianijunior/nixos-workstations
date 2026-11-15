@@ -18,7 +18,7 @@
     ../../modules/services/power-management.nix
   ];
 
-  # Kernel: usa o linuxPackages_zen definido em modules/common (igual ao nobita).
+  # Kernel: usa o linuxPackages_latest definido em modules/common (igual ao nobita).
   #
   # Histórico: houve um pin temporário no LTS 6.12 aqui enquanto o problema de boot/display
   # deste APU Rembrandt (RADEON 680M) era investigado. A causa raiz acabou sendo o
@@ -30,7 +30,7 @@
   # Mitigado na época com um overlay que pinava o firmware em 20260810 (overlays/linux-firmware.nix).
   # A regressão foi resolvida upstream a partir do firmware 20261019: o yellow_carp_dmcub.bin
   # voltou a ser aceito pelo PSP (DMCUB error = 0 no boot do doraemon). Com isso o overlay de
-  # firmware foi removido e o zen voltou a funcionar com o firmware do nixpkgs, mantendo
+  # firmware foi removido e o kernel voltou a funcionar com o firmware do nixpkgs, mantendo
   # consistência com o nobita.
 
   # Hostname

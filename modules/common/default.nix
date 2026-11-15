@@ -42,8 +42,8 @@
   # Allow unfree packages (Steam, etc.) — set in modules/services/gaming.nix
   # nixpkgs.config is intentionally NOT set here to avoid conflicts with test framework
 
-  # Kernel - Zen (optimized for desktop responsiveness and low latency)
-  boot.kernelPackages = pkgs.linuxPackages_zen;
+  # Kernel - mainline (latest). O zen 7.3.4 dava kernel panic no boot (NULL pointer em process_one_work).
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Bootloader - systemd-boot (UEFI)
   boot.loader = {

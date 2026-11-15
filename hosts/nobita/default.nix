@@ -31,8 +31,8 @@
   # - D.O.C.P. DDR4-3200 habilitado
   # - Global C-state Control [Disabled]
   # - SVM Mode [Enabled]
-  # Com essas configurações + kernel zen 7.2.4, o suspend S3 "deep" funciona corretamente.
-  # Kernel zen segue o padrão do modules/common (sem override aqui).
+  # Com essas configurações + kernel mainline, o suspend e o hibernate S3 "deep" funciona corretamente.
+  # Kernel segue o padrão do modules/common (sem override aqui).
 
   # Wi-Fi: força o carregamento do driver do Realtek RTL8852BE (Wi-Fi 6, PCI 10ec:b852).
   # Após o flash da BIOS 4655, o autoload do módulo deixou de ocorrer no boot: o chip
