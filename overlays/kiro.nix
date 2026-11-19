@@ -15,7 +15,7 @@
 #
 final: prev:
 let
-  version = "1.4.178";
+  version = "1.4.236";
 in
 {
   kiro = prev.stdenv.mkDerivation {
@@ -25,7 +25,7 @@ in
     src = final.fetchurl {
       url = "https://prod.download.desktop.kiro.dev/releases/stable/linux-x64/signed/${version}/tar/kiro-ide-${version}-stable-linux-x64.tar.gz";
       # Para obter o hash: veja instruções no topo deste arquivo
-      hash = "sha256-4MJAlYnElfKZTOP9I6r7EmoMyT0UmucTr3lPxZSV1OM=";
+      hash = "sha256-104rLo+vkDrJaBW5YTDnQFJpBWarPostm/f76HPwCGA=";
     };
 
     nativeBuildInputs = [
