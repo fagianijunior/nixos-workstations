@@ -43,7 +43,7 @@
   # nixpkgs.config is intentionally NOT set here to avoid conflicts with test framework
 
   # Kernel - mainline (latest). O zen 7.3.4 dava kernel panic no boot (NULL pointer em process_one_work).
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs.linuxPackages_zen;
 
   # Bootloader - systemd-boot (UEFI)
   boot.loader = {
